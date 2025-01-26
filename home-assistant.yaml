@@ -1,7 +1,7 @@
 services:
   homeassistant:
-    image: ghcr.io/homeassistant/home-assistant:latest
-    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: home-assistant
     restart: unless-stopped
     network_mode: host
     ports:
