@@ -4,6 +4,9 @@ services:
     container_name: samba
     restart: unless-stopped
     network_mode: bridge
+    environment:
+      - SAMBA_USER: ${SAMBA_USER}
+      - SAMBA_PASSWORD: ${SAMBA_PASSWORD}
     ports:
       - 445:445
     volumes:
