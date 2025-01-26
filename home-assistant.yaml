@@ -1,0 +1,17 @@
+services:
+  homeassistant:
+    image: ghcr.io/homeassistant/home-assistant:latest
+    container_name: homeassistant
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - 8123:8123
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/pi/homeassistant:/config
+      - /run/dbus:/run/dbus
+    deploy:
+      resources:
+        limits:
+          memory: 2560M
+          cpus: 0.25

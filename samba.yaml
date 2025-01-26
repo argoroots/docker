@@ -1,0 +1,15 @@
+services:
+  samba:
+    image: ghcr.io/argoroots/samba:latest
+    container_name: samba
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 445:445
+    volumes:
+      - /mnt:/shared
+    deploy:
+      resources:
+        limits:
+          memory: 2560M
+          cpus: 0.25
