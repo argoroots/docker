@@ -3,9 +3,12 @@ services:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: home-assistant
     restart: unless-stopped
-    network_mode: host
+    network_mode: bridge
     ports:
+      - 5353:5353/udp
       - 8123:8123
+      - 21063:21063
+      - 51827:51827
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/pi/homeassistant:/config
