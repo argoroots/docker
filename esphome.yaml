@@ -3,13 +3,13 @@ services:
     image: ghcr.io/esphome/esphome
     container_name: esphome
     restart: unless-stopped
-    network_mode: bridge
+    network_mode: host
     environment:
       TZ: Europe/Tallinn
-      ESPHOME_DASHBOARD_USE_PING: true
-    ports:
-      - 6052:6052
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - esphome:/config
     deploy:
       resources:
