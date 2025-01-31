@@ -4,6 +4,8 @@ services:
     container_name: portainer
     restart: unless-stopped
     network_mode: bridge
+    environment:
+      TZ: Europe/Tallinn
     ports:
       - 8000:8000
       - 9000:9000

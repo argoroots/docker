@@ -4,6 +4,8 @@ services:
     container_name: home-assistant
     restart: unless-stopped
     network_mode: host
+    environment:
+      TZ: Europe/Tallinn
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/pi/homeassistant:/config

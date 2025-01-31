@@ -4,6 +4,8 @@ services:
     container_name: plex
     restart: unless-stopped
     network_mode: host
+    environment:
+      TZ: Europe/Tallinn
     volumes:
       - plex:/config
       - plex_transcode:/transcode
