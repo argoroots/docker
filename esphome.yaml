@@ -1,6 +1,6 @@
 services:
   esphome:
-    image: ghcr.io/esphome/esphome
+    image: ghcr.io/esphome/esphome:latest
     container_name: esphome
     restart: unless-stopped
     network_mode: host
