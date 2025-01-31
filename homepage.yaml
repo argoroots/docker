@@ -12,6 +12,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - homepage:/app/config
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: 0.25
 
 volumes:
   homepage:
