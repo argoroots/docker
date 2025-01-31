@@ -11,7 +11,7 @@ services:
       - /home/pi/homeassistant:/config
       - /run/dbus:/run/dbus
     devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
     deploy:
       resources:
         limits:
