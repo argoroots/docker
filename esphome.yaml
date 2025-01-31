@@ -14,8 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2.5G
-          cpus: 0.25
+          memory: 4G
+          cpus: 0.5
 
 volumes:
   esphome:
