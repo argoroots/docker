@@ -7,11 +7,11 @@ services:
     environment:
       TZ: Europe/Tallinn
     ports:
-      - 3000:3000
+      - 80:3000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - homepage:/app/config
+      - /home/pi/homepage:/app/config
     labels:
       homepage.group: Docker
       homepage.name: Homepage
@@ -23,7 +23,3 @@ services:
         limits:
           memory: 2.5G
           cpus: 0.25
-
-volumes:
-  homepage:
-    name: homepage
