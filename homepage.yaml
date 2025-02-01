@@ -3,7 +3,7 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: unless-stopped
-    network_mode: host
+    network_mode: bridge
     environment:
       TZ: Europe/Tallinn
     ports:
