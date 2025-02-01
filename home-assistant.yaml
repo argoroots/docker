@@ -16,7 +16,7 @@ services:
       homepage.group: Docker
       homepage.name: Home Assistant
       homepage.description: ${URL}
-      homepage.icon: homeassistant.png
+      homepage.icon: home-assistant.png
       homepage.href: ${URL}
       homepage.widget.type: homeassistant
       homepage.widget.url: ${URL}
