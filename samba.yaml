@@ -11,6 +11,12 @@ services:
       - 445:445
     volumes:
       - /mnt:/shared
+    labels:
+      homepage.group: Docker
+      homepage.name: Samba
+      homepage.description: ${URL}
+      homepage.icon: samba.png
+      homepage.href: ${URL}
     deploy:
       resources:
         limits:
