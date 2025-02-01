@@ -12,6 +12,14 @@ services:
       - /run/dbus:/run/dbus
     devices:
       - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
+    labels:
+      homepage.group: Docker
+      homepage.name: Home Assistant
+      homepage.icon: homeassistant.png
+      homepage.href: ${URL}
+      homepage.widget.type: homeassistant
+      homepage.widget.url: ${URL}
+      homepage.widget.key: ${TOKEN}
     deploy:
       resources:
         limits:
