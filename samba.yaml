@@ -15,7 +15,7 @@ services:
       homepage.group: Docker
       homepage.name: Samba
       homepage.description: ${URL}
-      homepage.icon: samba.png
+      homepage.icon: files.png
       homepage.href: ${URL}
     deploy:
       resources:
