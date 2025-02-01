@@ -12,6 +12,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - homepage:/app/config
+    labels:
+      homepage.group: Docker
+      homepage.name: Homepage
+      homepage.description: ${URL}
+      homepage.icon: homepage.png
+      homepage.href: ${URL}
     deploy:
       resources:
         limits:
