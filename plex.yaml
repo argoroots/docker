@@ -14,6 +14,7 @@ services:
     labels:
       homepage.group: Docker
       homepage.name: Plex
+      homepage.description: ${URL}/web
       homepage.icon: plex.png
       homepage.href: ${URL}/web
       homepage.widget.type: plex
