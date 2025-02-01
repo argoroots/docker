@@ -12,7 +12,7 @@ services:
       - /mnt/ssd1:/data/ssd1
       - /mnt/ssd2:/data/ssd2
     labels:
-      homepage.group: Docker
+      homepage.group: Media
       homepage.name: Plex
       homepage.description: ${URL}/web
       homepage.icon: plex.png

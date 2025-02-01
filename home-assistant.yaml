@@ -13,7 +13,7 @@ services:
     devices:
       - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
     labels:
-      homepage.group: Docker
+      homepage.group: Home Assistant
       homepage.name: Home Assistant
       homepage.description: ${URL}
       homepage.icon: home-assistant.png

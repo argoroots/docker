@@ -12,7 +12,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - esphome:/config
     labels:
-      homepage.group: Docker
+      homepage.group: Home Assistant
       homepage.name: ESPHome
       homepage.description: ${URL}
       homepage.icon: esphome.png
