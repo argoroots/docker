@@ -1,0 +1,26 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser
+    container_name: filebrowser
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Europe/Tallinn
+    ports:
+      - 8080:80
+    volumes:
+      - /mnt:/srv
+      - /path/filebrowser.db:/database.db
+      - /path/.filebrowser.json:/.filebrowser.json
+    user: ${UID}:${GID}
+    labels:
+      homepage.group: File Browser
+      homepage.name: File Browser
+      homepage.description: ${URL}
+      homepage.icon: files.png
+      homepage.href: ${URL}
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: 0.25
