@@ -10,8 +10,6 @@ services:
       - 8080:80
     volumes:
       - /mnt:/srv
-      - /path/filebrowser.db:/database.db
-      - /path/.filebrowser.json:/.filebrowser.json
     user: ${UID}:${GID}
     labels:
       homepage.group: File Browser
