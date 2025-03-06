@@ -3,12 +3,14 @@ services:
     image: filebrowser/filebrowser
     container_name: file-browser
     restart: unless-stopped
-    network_mode: host
+    network_mode: bridge
     environment:
       TZ: Europe/Tallinn
     ports:
       - 80:8080
     volumes:
+      - filebrowser:/.filebrowser.json
+      - filebrowser_db:/database.db
       - /mnt:/srv
     user: ${UID}:${GID}
     labels:
@@ -22,3 +24,9 @@ services:
         limits:
           memory: 2.5G
           cpus: 0.25
+
+volumes:
+  filebrowser:
+    name: filebrowser
+  filebrowser_db:
+    name: filebrowser_db
