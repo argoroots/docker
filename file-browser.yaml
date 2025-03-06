@@ -9,8 +9,8 @@ services:
     ports:
       - 80:8080
     volumes:
-      - filebrowser:/.filebrowser.json
-      - filebrowser_db:/database.db
+      - /home/pi/filebrowser/filebrowser.json:/.filebrowser.json
+      - /home/pi/filebrowser/database.db:/database.db
       - /mnt:/srv
     user: ${UID}:${GID}
     labels:
@@ -24,9 +24,3 @@ services:
         limits:
           memory: 2.5G
           cpus: 0.25
-
-volumes:
-  filebrowser:
-    name: filebrowser
-  filebrowser_db:
-    name: filebrowser_db
