@@ -18,8 +18,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: 0.1
+          memory: 2.5G
+          cpus: 0.25
     # privileged caps (and security-opt) needed to mount smb folders within the container
     # cap_add:
     #   - SYS_ADMIN
