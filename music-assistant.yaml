@@ -7,6 +7,7 @@ services:
     environment:
       TZ: Europe/Tallinn
     volumes:
+      - music-assistant:/data
       # - ${USERDIR:-$HOME}/docker/music-assistant-server/data:/data/
     labels:
       homepage.group: Media
@@ -25,3 +26,7 @@ services:
     #   - DAC_READ_SEARCH
     # security_opt:
     #   - apparmor:unconfined
+
+volumes:
+  music-assistant:
+    name: music-assistant
