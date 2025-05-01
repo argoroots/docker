@@ -1,0 +1,27 @@
+services:
+  music-assistant:
+    image: ghcr.io/music-assistant/server:latest
+    container_name: music-assistant
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Europe/Tallinn
+    volumes:
+      # - ${USERDIR:-$HOME}/docker/music-assistant-server/data:/data/
+    labels:
+      homepage.group: Media
+      homepage.name: Music Assistant
+      homepage.description: ${URL}
+      homepage.icon: music.png
+      homepage.href: ${URL}
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 0.1
+    # privileged caps (and security-opt) needed to mount smb folders within the container
+    # cap_add:
+    #   - SYS_ADMIN
+    #   - DAC_READ_SEARCH
+    # security_opt:
+    #   - apparmor:unconfined
