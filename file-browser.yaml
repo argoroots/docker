@@ -7,7 +7,7 @@ services:
     environment:
       TZ: Europe/Tallinn
     ports:
-      - 8080:8080
+      - 8080:80
     volumes:
       - /home/pi/filebrowser/filebrowser.json:/.filebrowser.json
       - /home/pi/filebrowser/database.db:/database.db
