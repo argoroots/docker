@@ -12,6 +12,9 @@ services:
       - /run/dbus:/run/dbus
     devices:
       - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     labels:
       homepage.group: Home Assistant
       homepage.name: Home Assistant
