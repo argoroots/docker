@@ -15,15 +15,6 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    labels:
-      homepage.group: Home Assistant
-      homepage.name: Home Assistant
-      homepage.description: ${URL}
-      homepage.icon: home-assistant.png
-      homepage.href: ${URL}
-      homepage.widget.type: homeassistant
-      homepage.widget.url: ${URL}
-      homepage.widget.key: ${TOKEN}
     deploy:
       resources:
         limits:

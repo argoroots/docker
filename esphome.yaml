@@ -11,16 +11,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - esphome:/config
-    labels:
-      homepage.group: Home Assistant
-      homepage.name: ESPHome
-      homepage.description: ${URL}
-      homepage.icon: esphome.png
-      homepage.href: ${URL}
-      homepage.widget.type: esphome
-      homepage.widget.url: ${URL}
-      homepage.widget.password: ${PASSWORD}
-      homepage.widget.username: ${USERNAME}
     deploy:
       resources:
         limits:

@@ -13,12 +13,6 @@ services:
       - /home/pi/filebrowser/database.db:/database.db
       - /mnt:/srv
     user: ${UID}:${GID}
-    labels:
-      homepage.group: File Browser
-      homepage.name: File Browser
-      homepage.description: ${URL}
-      homepage.icon: files.png
-      homepage.href: ${URL}
     deploy:
       resources:
         limits:

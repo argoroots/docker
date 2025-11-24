@@ -11,15 +11,6 @@ services:
       - plex_transcode:/transcode
       - /mnt/ssd1:/data/ssd1
       - /mnt/ssd2:/data/ssd2
-    labels:
-      homepage.group: Media
-      homepage.name: Plex
-      homepage.description: ${URL}/web
-      homepage.icon: plex.png
-      homepage.href: ${URL}/web
-      homepage.widget.type: plex
-      homepage.widget.url: ${URL}
-      homepage.widget.key: ${TOKEN}
     deploy:
       resources:
         limits:

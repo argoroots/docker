@@ -9,12 +9,6 @@ services:
     volumes:
       - music-assistant:/data
       # - ${USERDIR:-$HOME}/docker/music-assistant-server/data:/data/
-    labels:
-      homepage.group: Media
-      homepage.name: Music Assistant
-      homepage.description: ${URL}
-      homepage.icon: music.png
-      homepage.href: ${URL}
     deploy:
       resources:
         limits:
