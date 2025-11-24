@@ -7,7 +7,7 @@ services:
     environment:
       TZ: Europe/Tallinn
     ports:
-      - 8080:8080
+      - 9123:8080
     volumes:
       - /home/pi/zigbee2mqtt/data:/app/data
       - /run/udev:/run/udev:ro
