@@ -6,8 +6,7 @@ services:
     network_mode: host
     environment:
       TZ: Europe/Tallinn
-    ports:
-      - 9123:8080
+      ZIGBEE2MQTT_CONFIG_FRONTEND_PORT: 9123
     volumes:
       - /home/pi/zigbee2mqtt/data:/app/data
       - /run/udev:/run/udev:ro
