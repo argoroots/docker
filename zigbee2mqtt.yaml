@@ -11,7 +11,7 @@ services:
       - /home/pi/zigbee2mqtt/data:/app/data
       - /run/udev:/run/udev:ro
     devices:
-      - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
+      - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyACM0
     deploy:
       resources:
         limits:
