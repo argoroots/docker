@@ -1,9 +1,19 @@
 services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Europe/Tallinn
+
   zigbee2mqtt:
     image: ghcr.io/koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
     restart: unless-stopped
     network_mode: host
+    depends_on:
+      - mosquitto
     environment:
       TZ: Europe/Tallinn
     volumes:
