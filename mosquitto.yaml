@@ -1,0 +1,22 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Tallinn
+    ports:
+      - 1883:1883
+      - 9001:9001
+    networks:
+      - iot
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: 0.25
+
+networks:
+  iot:
+    name: iot
+    external: true
