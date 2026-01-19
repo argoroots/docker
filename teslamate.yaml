@@ -29,8 +29,6 @@ services:
     image: postgres:18-trixie
     container_name: postgres
     restart: unless-stopped
-    cap_drop:
-      - all
     environment:
       TZ: Europe/Tallinn
       POSTGRES_USER: teslamate
