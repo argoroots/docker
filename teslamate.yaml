@@ -36,7 +36,7 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASS} # insert your secure database password!
       POSTGRES_DB: teslamate
     volumes:
-      - /home/pi/teslamate/database:/var/lib/postgresql/data
+      - /home/pi/teslamate/database:/var/lib/postgresql
     deploy:
       resources:
         limits:
