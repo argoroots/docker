@@ -3,6 +3,8 @@ services:
     image: eclipse-mosquitto:latest
     container_name: mosquitto
     restart: unless-stopped
+    cap_drop:
+      - all
     environment:
       TZ: Europe/Tallinn
     ports:

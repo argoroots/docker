@@ -3,6 +3,8 @@ services:
     image: ghcr.io/koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
     restart: unless-stopped
+    cap_drop:
+      - all
     environment:
       TZ: Europe/Tallinn
     ports:

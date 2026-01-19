@@ -3,6 +3,8 @@ services:
     image: teslamate/teslamate:latest
     container_name: teslamate
     restart: unless-stopped
+    cap_drop:
+      - all
     environment:
       TZ: Europe/Tallinn
       ENCRYPTION_KEY: ${ENCRYPTION_KEY} # replace with a secure key to encrypt your Tesla API tokens
@@ -15,10 +17,7 @@ services:
       - 4000:4000
     volumes:
       - /home/pi/teslamate/import:/opt/app/import
-    cap_drop:
-      - all
     networks:
-      - default
       - iot
     deploy:
       resources:
@@ -30,6 +29,8 @@ services:
     image: postgres:18-trixie
     container_name: postgres
     restart: unless-stopped
+    cap_drop:
+      - all
     environment:
       TZ: Europe/Tallinn
       POSTGRES_USER: teslamate
@@ -37,6 +38,8 @@ services:
       POSTGRES_DB: teslamate
     volumes:
       - /home/pi/teslamate/database:/var/lib/postgresql
+    networks:
+      - iot
     deploy:
       resources:
         limits:
@@ -47,6 +50,8 @@ services:
     image: teslamate/grafana:latest
     container_name: grafana
     restart: unless-stopped
+    cap_drop:
+      - all
     environment:
       TZ: Europe/Tallinn
       DATABASE_USER: teslamate
@@ -58,6 +63,8 @@ services:
     volumes:
       - /home/pi/teslamate/grafana:/var/lib/grafana
     user: "472:472"
+    networks:
+      - iot
     deploy:
       resources:
         limits:

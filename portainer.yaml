@@ -7,7 +7,6 @@ services:
     environment:
       TZ: Europe/Tallinn
     ports:
-      - 8000:8000
       - 9000:9000
       - 9443:9443
     volumes:
