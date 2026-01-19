@@ -3,13 +3,9 @@ services:
     image: ghcr.io/home-assistant/home-assistant:latest
     container_name: home-assistant
     restart: unless-stopped
+    network_mode: host
     environment:
       TZ: Europe/Tallinn
-    ports:
-      - 8123:8123
-      - 21063:21063
-      - 21064:21064
-      - 5353:5353/udp
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/pi/homeassistant:/config
@@ -17,15 +13,8 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    networks:
-      - iot
     deploy:
       resources:
         limits:
           memory: 2.5G
           cpus: 0.25
-
-networks:
-  iot:
-    name: iot
-    external: true
