@@ -13,7 +13,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/pi/homeassistant:/config
-      - /run/dbus:/run/dbus
+      - /run/dbus:/run/dbus:ro
     cap_add:
       - NET_ADMIN
       - NET_RAW
