@@ -57,6 +57,7 @@ services:
       - 3000:3000
     volumes:
       - /home/pi/teslamate/grafana:/var/lib/grafana
+    user: "472:472"
     deploy:
       resources:
         limits:
