@@ -50,7 +50,7 @@ services:
     environment:
       TZ: Europe/Tallinn
       DATABASE_USER: teslamate
-      DATABASE_PASS: ${TESLAMATE_DB_PASSWORD} # insert your secure database password!
+      DATABASE_PASS: ${DATABASE_PASS} # insert your secure database password!
       DATABASE_NAME: teslamate
       DATABASE_HOST: database
     ports:
