@@ -5,9 +5,9 @@ services:
     restart: unless-stopped
     environment:
       TZ: Europe/Tallinn
-      ENCRYPTION_KEY: secretkey # replace with a secure key to encrypt your Tesla API tokens
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY} # replace with a secure key to encrypt your Tesla API tokens
       DATABASE_USER: teslamate
-      DATABASE_PASS: ${TESLAMATE_DB_PASSWORD} # insert your secure database password!
+      DATABASE_PASS: ${DATABASE_PASS} # insert your secure database password!
       DATABASE_NAME: teslamate
       DATABASE_HOST: database
       MQTT_HOST: mosquitto
@@ -33,7 +33,7 @@ services:
     environment:
       TZ: Europe/Tallinn
       POSTGRES_USER: teslamate
-      POSTGRES_PASSWORD: ${TESLAMATE_DB_PASSWORD} # insert your secure database password!
+      POSTGRES_PASSWORD: ${DATABASE_PASS} # insert your secure database password!
       POSTGRES_DB: teslamate
     volumes:
       - /home/pi/teslamate/database:/var/lib/postgresql/data
