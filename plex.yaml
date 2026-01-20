@@ -3,19 +3,9 @@ services:
     image: plexinc/pms-docker:latest
     container_name: plex
     restart: unless-stopped
-    cap_drop:
-      - all
+    network_mode: host
     environment:
       TZ: Europe/Tallinn
-    ports:
-      - 32400:32400/tcp
-      - 1900:1900/udp
-      - 8324:8324/tcp
-      - 32410:32410/udp
-      - 32412:32412/udp
-      - 32413:32413/udp
-      - 32414:32414/udp
-      - 32469:32469/tcp
     volumes:
       - plex:/config
       - plex_transcode:/transcode
