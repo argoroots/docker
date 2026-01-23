@@ -4,8 +4,6 @@ services:
     container_name: file-browser
     restart: unless-stopped
     network_mode: bridge
-    cap_drop:
-      - all
     environment:
       TZ: Europe/Tallinn
     ports:
