@@ -56,6 +56,7 @@ services:
       DATABASE_PASS: ${DATABASE_PASS} # insert your secure database password!
       DATABASE_NAME: teslamate
       DATABASE_HOST: database
+      GF_DATE_FORMATS_USE_BROWSER_LOCALE: false
     ports:
       - 3000:3000
     volumes:
