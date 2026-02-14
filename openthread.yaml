@@ -1,18 +1,21 @@
 services:
   openthread:
-    image: openthread/otbr:latest
+    image: openthread/border-router:latest
     container_name: openthread
     restart: unless-stopped
     network_mode: host
     environment:
       TZ: Europe/Tallinn
+      OT_INFRA_IF: eth0
+      OT_LOG_LEVEL: 7
+      OT_RCP_DEVICE: spinel+hdlc+uart:///dev/ttyUSB1
+      OT_THREAD_IF: wpan0
       OTBR_DISABLE_BACKBONE_ROUTER: "1"
       OTBR_DISABLE_FIREWALL: "1"
-      OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB0
     volumes:
       - /home/pi/openthread:/var/lib/thread
     devices:
-      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
+      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB1
     cap_add:
       - NET_ADMIN
       - NET_RAW
