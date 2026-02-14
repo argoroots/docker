@@ -12,8 +12,6 @@ services:
       OT_THREAD_IF: wpan0
       OTBR_DISABLE_BACKBONE_ROUTER: "1"
       OTBR_DISABLE_FIREWALL: "1"
-    volumes:
-      - openthread:/var/lib/thread
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB1
     cap_add:
@@ -25,7 +23,3 @@ services:
         limits:
           memory: 2.5G
           cpus: 0.25
-
-volumes:
-  openthread:
-    name: openthread
