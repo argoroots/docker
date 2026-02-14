@@ -2,12 +2,12 @@ services:
   openthread:
     image: openthread/otbr:latest
     container_name: openthread
-    command: ["otbr-web", "-I", "wpan0", "-f"]
+    entrypoint: ["otbr-web"]
+    command: ["-I", "wpan0", "-f"]
     restart: unless-stopped
     network_mode: host
     environment:
       TZ: Europe/Tallinn
-      OTBR_DISABLE_BACKBONE_ROUTER: "1"
       OTBR_DISABLE_FIREWALL: "1"
       OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB0
     volumes:
@@ -18,7 +18,6 @@ services:
       - NET_ADMIN
       - NET_RAW
       - SYS_ADMIN
-      - SYS_MODULE
     deploy:
       resources:
         limits:
