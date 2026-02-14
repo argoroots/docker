@@ -9,11 +9,11 @@ services:
       TZ: Europe/Tallinn
       OTBR_DISABLE_FIREWALL: "1"
       OTBR_INFRA_IF_NAME: eth0
-      OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB1
+      OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB0
     volumes:
       - /home/pi/openthread:/var/lib/thread
     devices:
-      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB1
+      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
     cap_add:
       - NET_ADMIN
       - NET_RAW
