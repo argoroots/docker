@@ -1,6 +1,7 @@
 services:
   openthread:
     image: openthread/otbr:latest
+    command: ["otbr-agent", "-I", "wpan0", "-B", "-f"]
     container_name: openthread
     restart: unless-stopped
     network_mode: host
