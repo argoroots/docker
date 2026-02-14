@@ -1,0 +1,20 @@
+services:
+  oopenthreadr:
+    image: openthread/otbr:latest
+    container_name: openthread
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    environment:
+      TZ: Europe/Tallinn
+      OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB1
+      OTBR_INFRA_IF_NAME: eth0
+    volumes:
+      - /home/pi/openthread:/var/lib/thread
+    devices:
+      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB1
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: 0.25
