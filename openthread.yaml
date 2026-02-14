@@ -6,17 +6,17 @@ services:
     network_mode: host
     environment:
       TZ: Europe/Tallinn
-      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB1?uart-baudrate=115200"
+      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0"
       OT_INFRA_IF: "eth0"
       OT_THREAD_IF: "wpan0"
       OT_LOG_LEVEL: "7"
-      OT_REST_LISTEN_PORT: "8081"
-      OT_REST_LISTEN_ADDR: "0.0.0.0"
     devices:
-      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB1
+      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
+    volumes:
+      - /home/pi/openthread:/data
     deploy:
       resources:
         limits:
