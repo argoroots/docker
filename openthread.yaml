@@ -19,6 +19,8 @@ services:
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
+    group_add:
+      - 20
     deploy:
       resources:
         limits:
