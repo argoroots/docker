@@ -3,11 +3,12 @@ services:
     image: openthread/otbr:latest
     container_name: openthread
     entrypoint: ["otbr-web"]
-    command: ["-I", "wpan0", "-f"]
+    command: ["-I", "wpan0", "-p", "5580", "-a", "0.0.0.0", "-d", "7"]
     restart: unless-stopped
     network_mode: host
     environment:
       TZ: Europe/Tallinn
+      OTBR_DISABLE_BACKBONE_ROUTER: "1"
       OTBR_DISABLE_FIREWALL: "1"
       OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB0
     volumes:
