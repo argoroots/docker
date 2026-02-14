@@ -1,5 +1,5 @@
 services:
-  oopenthreadr:
+  openthread:
     image: openthread/otbr:latest
     container_name: openthread
     restart: unless-stopped
