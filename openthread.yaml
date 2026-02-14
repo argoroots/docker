@@ -2,8 +2,6 @@ services:
   openthread:
     image: openthread/otbr:latest
     container_name: openthread
-    entrypoint: ["otbr-web"]
-    command: ["-I", "wpan0", "-p", "5580", "-a", "0.0.0.0", "-d", "7"]
     restart: unless-stopped
     network_mode: host
     environment:
