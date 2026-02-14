@@ -2,13 +2,12 @@ services:
   openthread:
     image: openthread/otbr:latest
     container_name: openthread
-    command: ["otbr-web", "-I", "wpan0", "-B", "-f"]
+    command: ["otbr-web", "-I", "wpan0", "-f"]
     restart: unless-stopped
     network_mode: host
     environment:
       TZ: Europe/Tallinn
       OTBR_DISABLE_FIREWALL: "1"
-      OTBR_INFRA_IF_NAME: eth0
       OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB0
     volumes:
       - /home/pi/openthread:/var/lib/thread
