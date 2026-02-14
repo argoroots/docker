@@ -6,7 +6,7 @@ services:
     network_mode: host
     environment:
       TZ: Europe/Tallinn
-      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0"
+      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800"
       OT_INFRA_IF: "eth0"
       OT_THREAD_IF: "wpan0"
       OT_LOG_LEVEL: "7"
