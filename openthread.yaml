@@ -6,8 +6,9 @@ services:
     network_mode: host
     environment:
       TZ: Europe/Tallinn
-      OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB1
+      OTBR_DISABLE_FIREWALL: "1"
       OTBR_INFRA_IF_NAME: eth0
+      OTBR_RADIO_URL: spinel+hdlc+uart:///dev/ttyUSB1
     volumes:
       - /home/pi/openthread:/var/lib/thread
     devices:
