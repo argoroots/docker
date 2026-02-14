@@ -1,8 +1,8 @@
 services:
   openthread:
     image: openthread/otbr:latest
-    command: ["otbr-agent", "-I", "wpan0", "-B", "-f"]
     container_name: openthread
+    privileged: true
     restart: unless-stopped
     network_mode: host
     environment:
@@ -14,11 +14,6 @@ services:
       - /home/pi/openthread:/var/lib/thread
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB1
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-      - SYS_ADMIN
-      - SYS_MODULE
     deploy:
       resources:
         limits:
