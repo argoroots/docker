@@ -8,12 +8,12 @@ services:
       TZ: Europe/Tallinn
       OT_INFRA_IF: "eth0"
       OT_LOG_LEVEL: "7"
-      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=115200"
+      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyACM0?baudrate=460800"
       OT_THREAD_IF: "wpan0"
     volumes:
       - /home/pi/openthread:/data
     devices:
-      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
+      - /dev/ttyACM0:/dev/ttyACM0
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
