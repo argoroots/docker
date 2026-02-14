@@ -1,22 +1,36 @@
 services:
+  cpcd:
+    image: ghcr.io/siliconlabs/cpcd:latest
+    container_name: cpcd
+    restart: unless-stopped
+    devices:
+      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
+    working_dir: /app
+    command: "/app/cpcd -b 115200 -t /dev/ttyUSB0"
+    volumes:
+       - /var/run/cpcd:/var/run/cpcd
+
   openthread:
     image: openthread/border-router:latest
     container_name: openthread
     restart: unless-stopped
     network_mode: host
+    depends_on:
+      - cpcd
     environment:
       TZ: Europe/Tallinn
-      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=115200&uart-flow-control"
+      # Connect to the socket exposed by CPCD instead of the serial port
+      OT_RCP_DEVICE: "spinel+cpc://cpcd_0?cpc-sock-path=/var/run/cpcd/cpcd.sock"
       OT_INFRA_IF: "eth0"
       OT_THREAD_IF: "wpan0"
       OT_LOG_LEVEL: "7"
     devices:
-      - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
     volumes:
       - /home/pi/openthread:/data
+      - /var/run/cpcd:/var/run/cpcd # Share the socket volume
     deploy:
       resources:
         limits:
