@@ -13,6 +13,11 @@ services:
       DATABASE_NAME: teslamate
       DATABASE_HOST: database
       MQTT_HOST: mosquitto
+      # --- Fleet API ---
+      TESLA_API_HOST: https://fleet-api.prd.eu.vn.cloud.tesla.com
+      TESLA_AUTH_HOST: https://auth.tesla.com
+      TESLA_AUTH_PATH: /oauth2/v3
+      TESLA_AUTH_CLIENT_ID: ${TESLA_AUTH_CLIENT_ID} # insert your Tesla API client ID, see
     ports:
       - 4000:4000
     volumes:
