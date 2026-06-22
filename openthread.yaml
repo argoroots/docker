@@ -13,7 +13,7 @@ services:
       OT_FORM_NETWORK: "1"
       OT_INFRA_IF: eth0
       OT_LOG_LEVEL: 7
-      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?baudrate=460800"
+      OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800"
       OT_THREAD_IF: wpan0
       OTBR_ENABLE_TD_SERVER: "1"
     volumes:
