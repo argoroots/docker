@@ -4,6 +4,10 @@ services:
     container_name: openthread
     restart: unless-stopped
     network_mode: host
+    cap_add:
+      - NET_ADMIN
+    group_add:
+      - 20
     environment:
       TZ: Europe/Tallinn
       OT_FORM_NETWORK: "1"
@@ -17,12 +21,8 @@ services:
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - NET_ADMIN
-    group_add:
-      - 20
     deploy:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 1.0

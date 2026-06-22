@@ -7,14 +7,14 @@ services:
     environment:
       TZ: Europe/Tallinn
     ports:
-      - 8080:80
+      - 8081:80
     volumes:
       - /home/pi/filebrowser/filebrowser.json:/.filebrowser.json
       - /home/pi/filebrowser/database.db:/database.db
       - /mnt:/srv
-    user: ${UID}:${GID}
+    user: ${UID:-1000}:${GID:-1000}
     deploy:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 1.0

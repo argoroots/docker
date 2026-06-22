@@ -15,7 +15,7 @@ services:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 3.0
 
 volumes:
   plex:

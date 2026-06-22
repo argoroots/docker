@@ -23,7 +23,7 @@ services:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 1.0
 
   database:
     image: postgres:18-trixie
@@ -42,7 +42,7 @@ services:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 1.0
 
   grafana:
     image: teslamate/grafana:latest
@@ -68,7 +68,7 @@ services:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 1.0
 
 networks:
   iot:

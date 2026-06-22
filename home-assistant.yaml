@@ -4,17 +4,17 @@ services:
     container_name: home-assistant
     restart: unless-stopped
     network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     environment:
       TZ: Europe/Tallinn
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/pi/homeassistant:/config
       - /run/dbus:/run/dbus:ro
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
     deploy:
       resources:
         limits:
           memory: 2.5G
-          cpus: 0.25
+          cpus: 2.0
