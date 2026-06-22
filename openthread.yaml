@@ -40,3 +40,19 @@ services:
         limits:
           memory: 512M
           cpus: 0.25
+
+  matter-server:
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    container_name: matter-server
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Europe/Tallinn
+    volumes:
+      - /home/pi/matter-server:/data
+      - /run/dbus:/run/dbus:ro
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: 1.0
