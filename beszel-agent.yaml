@@ -9,6 +9,10 @@ services:
       KEY: ${BESZEL_KEY}
       TOKEN: ${BESZEL_TOKEN}
       HUB_URL: https://d.tesla.roots.ee
+    devices:
+      - /dev/nvme0:/dev/nvme0:r                  # controller, NOT nvme0n1
+    cap_add:
+      - SYS_ADMIN                              # required for NVMe S.M.A.R.T.
     volumes:
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
