@@ -19,7 +19,7 @@ services:
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
       # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     devices:
-      - /dev/nvme0:/dev/nvme0
+      - /dev/nvme0n1:/dev/nvme0
     deploy:
       resources:
         limits:
