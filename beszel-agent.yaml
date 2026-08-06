@@ -20,6 +20,8 @@ services:
       # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     devices:
       - /dev/nvme0:/dev/nvme0
+      - /dev/sda:/dev/sda
+      - /dev/sdb:/dev/sdb
     deploy:
       resources:
         limits:
