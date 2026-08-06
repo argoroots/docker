@@ -17,8 +17,8 @@ services:
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - beszel-agent:/var/lib/beszel-agent
-      - /mnt/ssd1/.beszel:/extra-filesystems/sda2:ro
-      - /mnt/ssd2/.beszel:/extra-filesystems/sdb2:ro
+      - /mnt/ssd1/.beszel:/extra-filesystems/sda2__SSD1:ro
+      - /mnt/ssd2/.beszel:/extra-filesystems/sdb2__SSD2:ro
     devices:
       - /dev/nvme0:/dev/nvme0
       - /dev/sda:/dev/sda
