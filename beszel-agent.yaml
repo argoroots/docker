@@ -12,6 +12,7 @@ services:
       KEY: ${BESZEL_KEY}
       TOKEN: ${BESZEL_TOKEN}
       HUB_URL: https://d.tesla.roots.ee
+      SMART_DEVICES: /dev/nvme0:nvme,/dev/sda:sat,/dev/sdb:sat
     volumes:
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
