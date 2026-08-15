@@ -18,6 +18,7 @@ services:
       OTBR_ENABLE_TD_SERVER: "1"
     volumes:
       - /home/pi/openthread:/data
+      - /run/dbus:/run/dbus
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
