@@ -11,9 +11,35 @@ services:
     environment:
       TZ: Europe/Tallinn
     volumes:
-      - ./sysctl/60-otbr.conf:/mnt/60-otbr.conf:ro
       - /etc/sysctl.d:/etc/sysctl.d
-    command: sh -c "cp /mnt/60-otbr.conf /etc/sysctl.d/60-otbr.conf && sysctl -p /etc/sysctl.d/60-otbr.conf"
+    command:
+      - sh
+      - -c
+      - |
+        cat > /etc/sysctl.d/60-otbr.conf <<'EOF'
+        # Managed by openthread.yaml -- do not edit on the host, changes are overwritten.
+        #
+        # Order matters: writing net.ipv6.conf.all.forwarding resets per-interface
+        # RA state, so the accept_ra settings must come after it.
+
+        # OTBR routes between the infra interface and the Thread mesh. Without IPv6
+        # forwarding, every Matter-over-Thread device is unreachable.
+        net.ipv6.conf.all.forwarding=1
+        net.ipv4.ip_forward=1
+
+        # The interface below must match OT_INFRA_IF above.
+        #
+        # accept_ra=2 -- with forwarding enabled the kernel ignores RAs at the
+        # default of 1; 2 means "accept them anyway".
+        #
+        # accept_ra_rt_info_max_plen=64 -- defaults to 0, which discards the Route
+        # Information Option carrying OTBR's OMR prefix. Without this, border
+        # routing reports healthy (ot-ctl br state == running) while no device is
+        # reachable.
+        net.ipv6.conf.eth0.accept_ra=2
+        net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64
+        EOF
+        sysctl -p /etc/sysctl.d/60-otbr.conf
     deploy:
       resources:
         limits:
