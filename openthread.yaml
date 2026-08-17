@@ -1,9 +1,33 @@
 services:
+  # Installs the host kernel settings OTBR depends on, then exits. Docker refuses
+  # `sysctls:` on host-network services, so this runs on deploy to write the file
+  # into /etc/sysctl.d and apply it; systemd-sysctl re-applies it on boot.
+  openthread-sysctl:
+    image: alpine:latest
+    container_name: openthread-sysctl
+    restart: "no"
+    network_mode: host
+    privileged: true
+    environment:
+      TZ: Europe/Tallinn
+    volumes:
+      - ./sysctl/60-otbr.conf:/mnt/60-otbr.conf:ro
+      - /etc/sysctl.d:/etc/sysctl.d
+    command: sh -c "cp /mnt/60-otbr.conf /etc/sysctl.d/60-otbr.conf && sysctl -p /etc/sysctl.d/60-otbr.conf"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.1
+
   openthread:
     image: openthread/border-router:latest
     container_name: openthread
     restart: unless-stopped
     network_mode: host
+    depends_on:
+      openthread-sysctl:
+        condition: service_completed_successfully
     cap_add:
       - NET_ADMIN
       - NET_RAW
