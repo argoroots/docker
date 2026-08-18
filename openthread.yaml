@@ -63,7 +63,7 @@ services:
       - 20
     environment:
       TZ: Europe/Tallinn
-      OT_FORM_NETWORK: "0"
+      OT_FORM_NETWORK: "1"
       OT_INFRA_IF: wlan0
       OT_LOG_LEVEL: 3
       OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800"
@@ -103,6 +103,11 @@ services:
       - apparmor=unconfined
     environment:
       TZ: Europe/Tallinn
+    # --primary-interface: without it the controller advertises itself on every
+    # docker bridge and veth, where no device can reach it.
+    # --bluetooth-adapter: commission Matter devices over BLE from the Pi itself,
+    # so no phone is involved and no foreign Thread credentials get handed out.
+    command: --primary-interface wlan0 --bluetooth-adapter 0
     volumes:
       - /home/pi/matter-server:/data
       - /run/dbus:/run/dbus:ro
