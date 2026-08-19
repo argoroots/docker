@@ -5,10 +5,16 @@ services:
     restart: unless-stopped
     environment:
       TZ: Europe/Tallinn
+    # Mosquitto has no env-var configuration, so the config is written at start.
+    # Persistence is deliberately off; nothing here needs retained state.
+    command:
+      - sh
+      - -c
+      - |
+        printf 'listener 1883 0.0.0.0\nallow_anonymous true\n' > /tmp/mosquitto.conf
+        exec mosquitto -c /tmp/mosquitto.conf
     ports:
       - 1883:1883
-    volumes:
-      - /home/pi/mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
       - iot
     deploy:
