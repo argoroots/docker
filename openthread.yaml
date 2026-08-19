@@ -40,6 +40,13 @@ services:
         # reachable.
         net.ipv6.conf.wlan0.accept_ra=2
         net.ipv6.conf.wlan0.accept_ra_rt_info_max_plen=64
+
+        # eth0 shares the LAN with wlan0, so it hears OTBR's own RAs and installs
+        # a route to the Thread OMR prefix via the Pi itself -- at a better metric
+        # than the real wpan0 route. Packets to Thread devices then loop until the
+        # hop limit expires and every Matter operation times out. Refuse RAs here.
+        net.ipv6.conf.eth0.accept_ra=0
+        net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=0
         EOF
         sysctl -p /etc/sysctl.d/60-otbr.conf
     deploy:
