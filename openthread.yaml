@@ -87,6 +87,8 @@ services:
     container_name: openthread-web
     restart: unless-stopped
     network_mode: host
+    depends_on:
+      - openthread
     environment:
       TZ: Europe/Tallinn
     command: TCP-LISTEN:8090,fork,reuseaddr TCP:127.0.0.1:8080
