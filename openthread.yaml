@@ -85,6 +85,14 @@ services:
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
+    # "Up" is not the same as attached to the Thread network -- OTBR stays
+    # running while detached or with a wedged RCP.
+    healthcheck:
+      test: ["CMD-SHELL", "ot-ctl state | grep -qE 'leader|router|child'"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     logging:
       driver: json-file
       options:
@@ -123,6 +131,12 @@ services:
     volumes:
       - matter-server:/data
       - /run/dbus:/run/dbus:ro
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('127.0.0.1', 5580), 5)\""]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     logging:
       driver: json-file
       options:

@@ -1,6 +1,6 @@
 services:
   file-browser:
-    image: filebrowser/filebrowser
+    image: filebrowser/filebrowser:latest
     container_name: file-browser
     restart: unless-stopped
     network_mode: bridge

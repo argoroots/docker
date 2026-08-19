@@ -1,0 +1,5 @@
+# Stack secrets live in Portainer's environment, never in the repo.
+.env
+.env.*
+
+.DS_Store
