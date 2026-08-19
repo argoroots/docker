@@ -11,8 +11,7 @@ services:
     ports:
       - 8082:80
     volumes:
-      - /home/pi/filebrowser/filebrowser.json:/.filebrowser.json
-      - /home/pi/filebrowser/database.db:/database.db
+      - file-browser:/database
       - /mnt:/srv
     user: ${UID:-1000}:${GID:-1000}
     deploy:
@@ -20,3 +19,7 @@ services:
         limits:
           memory: 2.5G
           cpus: 1.0
+
+volumes:
+  file-browser:
+    name: file-browser
