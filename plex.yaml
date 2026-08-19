@@ -4,6 +4,10 @@ services:
     container_name: plex
     restart: unless-stopped
     network_mode: host
+    # No cap_drop here: the entrypoint chowns /config and drops to the plex user,
+    # which needs CHOWN/FOWNER/SETUID/SETGID/DAC_OVERRIDE.
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     volumes:
@@ -14,6 +18,11 @@ services:
     # so keeping it off the NVMe saves write cycles and is faster.
     tmpfs:
       - /transcode:size=2g
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:

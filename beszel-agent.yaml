@@ -4,9 +4,13 @@ services:
     container_name: beszel-agent
     restart: unless-stopped
     network_mode: host
+    cap_drop:
+      - all
     cap_add:
       - SYS_RAWIO # required for S.M.A.R.T. data
       - SYS_ADMIN # required for NVMe S.M.A.R.T. data
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
       KEY: ${BESZEL_KEY}
@@ -23,6 +27,11 @@ services:
       - /dev/nvme0:/dev/nvme0
       - /dev/sda:/dev/sda
       - /dev/sdb:/dev/sdb
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:

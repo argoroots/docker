@@ -4,15 +4,24 @@ services:
     container_name: home-assistant
     restart: unless-stopped
     network_mode: host
+    cap_drop:
+      - all
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - home-assistant:/config
       - /run/dbus:/run/dbus:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:

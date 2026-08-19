@@ -4,6 +4,10 @@ services:
     container_name: esphome
     restart: unless-stopped
     network_mode: host
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
       USERNAME: ${USERNAME}
@@ -11,6 +15,11 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - esphome:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:

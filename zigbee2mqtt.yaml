@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     cap_drop:
       - all
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     ports:
@@ -17,6 +19,11 @@ services:
       - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
     networks:
       - iot
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:

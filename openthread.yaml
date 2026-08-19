@@ -44,6 +44,11 @@ services:
         sysctl -p /etc/sysctl.d/60-otbr.conf
     volumes:
       - /etc/sysctl.d:/etc/sysctl.d
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -58,9 +63,13 @@ services:
     depends_on:
       openthread-sysctl:
         condition: service_completed_successfully
+    cap_drop:
+      - all
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    security_opt:
+      - no-new-privileges:true
     group_add:
       - 20
     environment:
@@ -76,6 +85,11 @@ services:
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -87,8 +101,11 @@ services:
     container_name: matter-server
     restart: unless-stopped
     network_mode: host
+    cap_drop:
+      - all
     security_opt:
       - apparmor=unconfined
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     # --storage-path / --paa-root-cert-dir are the image's own defaults and must
@@ -106,6 +123,11 @@ services:
     volumes:
       - matter-server:/data
       - /run/dbus:/run/dbus:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -125,6 +147,10 @@ services:
     depends_on:
       - openthread
       - matter-server
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     entrypoint: ["python", "-c"]
@@ -163,6 +189,11 @@ services:
     # anonymous volume every time this one-shot runs. It stores nothing.
     tmpfs:
       - /data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:

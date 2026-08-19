@@ -3,6 +3,16 @@ services:
     image: eclipse-mosquitto:latest
     container_name: mosquitto
     restart: unless-stopped
+    cap_drop:
+      - all
+    # Mosquitto starts as root and drops to the mosquitto user; without these it
+    # cannot make that switch and exits.
+    cap_add:
+      - SETUID
+      - SETGID
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     environment:
       TZ: Europe/Tallinn
     # Mosquitto has no env-var configuration, so the config is written at start.
@@ -13,16 +23,26 @@ services:
       - |
         printf 'listener 1883 0.0.0.0\nallow_anonymous true\n' > /tmp/mosquitto.conf
         exec mosquitto -c /tmp/mosquitto.conf
+    # Published to localhost only. Home Assistant reaches it over host networking
+    # at 127.0.0.1; Zigbee2MQTT reaches it as mosquitto:1883 on the iot network,
+    # which does not go through the published port. Nothing on the LAN can
+    # connect, which is what makes allow_anonymous acceptable.
     ports:
-      - 1883:1883
-    # The image declares these as volumes; tmpfs stops Docker creating a new
-    # anonymous volume on every recreate. Persistence is off and logs go to
-    # stdout, so nothing here needs to survive a restart.
+      - 127.0.0.1:1883:1883
+    # /tmp holds the generated config, so it must be writable under read_only.
+    # The image declares the other two as volumes; tmpfs stops Docker creating a
+    # new anonymous volume on every recreate.
     tmpfs:
+      - /tmp
       - /mosquitto/data
       - /mosquitto/log
     networks:
       - iot
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     deploy:
       resources:
         limits:
