@@ -8,9 +8,12 @@ services:
       TZ: Europe/Tallinn
     volumes:
       - plex:/config
-      - plex_transcode:/transcode
       - /mnt/ssd1:/data/ssd1
       - /mnt/ssd2:/data/ssd2
+    # Transcoding scratch in RAM: several GB written and deleted per session,
+    # so keeping it off the NVMe saves write cycles and is faster.
+    tmpfs:
+      - /transcode:size=2g
     deploy:
       resources:
         limits:
@@ -20,5 +23,3 @@ services:
 volumes:
   plex:
     name: plex
-  plex_transcode:
-    name: plex_transcode
