@@ -38,6 +38,14 @@ services:
       - /mosquitto/log:uid=1883,gid=1883
     networks:
       - iot
+    # A publish proves the broker is actually accepting connections, not just
+    # that the process is alive.
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h 127.0.0.1 -t healthcheck -m ok || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     logging:
       driver: json-file
       options:
