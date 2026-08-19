@@ -4,8 +4,9 @@ services:
     container_name: home-assistant
     restart: unless-stopped
     network_mode: host
-    cap_drop:
-      - all
+    # No cap_drop here: the s6 init runs as root and fixes ownership under
+    # /config, which needs CAP_DAC_OVERRIDE/CHOWN. Dropping all capabilities
+    # makes root unable to write there and HA exits on startup.
     cap_add:
       - NET_ADMIN
       - NET_RAW
