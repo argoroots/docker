@@ -1,13 +1,16 @@
+# Portainer cannot deploy its own stack -- redeploying would kill the container
+# mid-operation -- so this one is applied by hand on the host, not from git:
+#   sudo cp portainer.yaml /home/pi/docker-compose.yml
+#   docker compose -f /home/pi/docker-compose.yml up -d
 services:
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ee:latest
     container_name: portainer
     restart: unless-stopped
     network_mode: bridge
     environment:
       TZ: Europe/Tallinn
     ports:
-      - 9000:9000
       - 9443:9443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
