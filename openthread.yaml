@@ -1,7 +1,7 @@
 services:
-  # Installs the host kernel settings OTBR depends on, then exits. Docker refuses
-  # `sysctls:` on host-network services, so this runs on deploy to write the file
-  # into /etc/sysctl.d and apply it; systemd-sysctl re-applies it on boot.
+  # Docker refuses `sysctls:` on host-network services, so the host settings OTBR
+  # needs are written to /etc/sysctl.d here and applied. Runs once per deploy;
+  # systemd-sysctl re-applies the file on every boot.
   openthread-sysctl:
     image: alpine:latest
     container_name: openthread-sysctl
@@ -10,45 +10,40 @@ services:
     privileged: true
     environment:
       TZ: Europe/Tallinn
-    volumes:
-      - /etc/sysctl.d:/etc/sysctl.d
     command:
       - sh
       - -c
       - |
         cat > /etc/sysctl.d/60-otbr.conf <<'EOF'
-        # Managed by openthread.yaml -- do not edit on the host, changes are overwritten.
-        #
-        # Order matters: writing net.ipv6.conf.all.forwarding resets per-interface
-        # RA state, so the accept_ra settings must come after it.
+        # Managed by openthread.yaml -- edits on the host are overwritten.
+        # Order matters: writing all.forwarding resets per-interface RA state,
+        # so the accept_ra settings must come after it.
 
-        # OTBR routes between the infra interface and the Thread mesh. Without IPv6
-        # forwarding, every Matter-over-Thread device is unreachable.
+        # Without forwarding, OTBR cannot route between the infra interface and
+        # the Thread mesh, and every Matter device is unreachable.
         net.ipv6.conf.all.forwarding=1
         net.ipv4.ip_forward=1
 
-        # The interface below must match OT_INFRA_IF above. Set to wlan0: the
-        # wired segment does not carry mDNS from the WiFi clients (HomePods,
-        # Apple TV), so Matter discovery only works from the WiFi side.
-        #
-        # accept_ra=2 -- with forwarding enabled the kernel ignores RAs at the
-        # default of 1; 2 means "accept them anyway".
-        #
-        # accept_ra_rt_info_max_plen=64 -- defaults to 0, which discards the Route
-        # Information Option carrying OTBR's OMR prefix. Without this, border
-        # routing reports healthy (ot-ctl br state == running) while no device is
-        # reachable.
+        # Must match OT_INFRA_IF below. wlan0, not eth0: the wired segment does
+        # not carry mDNS from the WiFi clients, so discovery only works here.
+        #   accept_ra=2                  accept RAs despite forwarding being on
+        #   accept_ra_rt_info_max_plen   defaults to 0, which drops the Route
+        #                                Information Option carrying the OMR
+        #                                prefix -- border routing then reports
+        #                                healthy while nothing is reachable
         net.ipv6.conf.wlan0.accept_ra=2
         net.ipv6.conf.wlan0.accept_ra_rt_info_max_plen=64
 
         # eth0 shares the LAN with wlan0, so it hears OTBR's own RAs and installs
-        # a route to the Thread OMR prefix via the Pi itself -- at a better metric
-        # than the real wpan0 route. Packets to Thread devices then loop until the
-        # hop limit expires and every Matter operation times out. Refuse RAs here.
+        # a route to the OMR prefix via the Pi itself, at a better metric than
+        # the real wpan0 route. Traffic to Thread devices then loops until the
+        # hop limit expires and every Matter operation times out.
         net.ipv6.conf.eth0.accept_ra=0
         net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=0
         EOF
         sysctl -p /etc/sysctl.d/60-otbr.conf
+    volumes:
+      - /etc/sysctl.d:/etc/sysctl.d
     deploy:
       resources:
         limits:
@@ -110,22 +105,13 @@ services:
       - apparmor=unconfined
     environment:
       TZ: Europe/Tallinn
-    # --primary-interface: without it the controller advertises itself on every
-    # docker bridge and veth, where no device can reach it.
-    # --bluetooth-adapter: commission Matter devices over BLE from the Pi itself,
-    # so no phone is involved and no foreign Thread credentials get handed out.
-    #
-    # The Thread dataset is held in memory only and is lost on every restart of
-    # this container. Commissioned devices survive (they live in /data), but
-    # pairing a NEW device afterwards fails with "Required network information
-    # not provided ... thread (no)". Re-set it via HA (Matter > Options > Set
-    # Thread credentials) and verify `thread_credentials_set` is true, or push it
-    # directly with the set_thread_dataset command on ws://localhost:5580/ws
-    # using the hex from `ot-ctl dataset active -x`.
-    # --storage-path and --paa-root-cert-dir are the image's own defaults and MUST
-    # be repeated here: setting `command` replaces them wholesale. Without the
-    # storage path the fabric and every commissioned node are written inside the
-    # container and lost on restart.
+    # --storage-path / --paa-root-cert-dir are the image's own defaults and must
+    #   be repeated: setting `command` replaces them wholesale, and without the
+    #   storage path the fabric and every commissioned node are lost on restart.
+    # --primary-interface stops the controller advertising itself on every docker
+    #   bridge and veth, where no device can reach it.
+    # --bluetooth-adapter commissions over BLE from the Pi, so no phone is
+    #   involved and no foreign Thread credentials get handed out.
     command: >-
       --storage-path /data
       --paa-root-cert-dir /data/credentials
@@ -139,3 +125,56 @@ services:
         limits:
           memory: 2.5G
           cpus: 1.0
+
+  # matter-server keeps the Thread dataset in memory only, so it is lost whenever
+  # that container restarts and pairing a NEW device then fails with "Required
+  # network information not provided ... thread (no)". Commissioned devices are
+  # unaffected. Runs once per deploy; re-run by hand after a restart with:
+  #   docker start matter-thread-credentials && docker logs matter-thread-credentials
+  matter-thread-credentials:
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    container_name: matter-thread-credentials
+    restart: "no"
+    network_mode: host
+    depends_on:
+      - openthread
+      - matter-server
+    environment:
+      TZ: Europe/Tallinn
+    entrypoint: ["python", "-c"]
+    command:
+      - |
+        import asyncio, aiohttp, sys
+        OTBR = 'http://127.0.0.1:8081/node/dataset/active'
+        WS = 'http://127.0.0.1:5580/ws'
+
+        async def main():
+            async with aiohttp.ClientSession() as session:
+                for attempt in range(30):
+                    try:
+                        async with session.ws_connect(WS) as ws:
+                            info = await ws.receive_json()
+                            if info.get('thread_credentials_set'):
+                                print('already set', flush=True)
+                                return
+                            async with session.get(OTBR, headers={'Accept': 'text/plain'}) as resp:
+                                resp.raise_for_status()
+                                dataset = (await resp.text()).strip().strip('"')
+                            await ws.send_json({
+                                'message_id': 'set',
+                                'command': 'set_thread_dataset',
+                                'args': {'dataset': dataset},
+                            })
+                            print(await ws.receive_json(), flush=True)
+                            return
+                    except Exception as err:
+                        print('waiting (%d): %r' % (attempt, err), flush=True)
+                        await asyncio.sleep(5)
+                sys.exit('gave up waiting for matter-server / otbr')
+
+        asyncio.run(main())
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
