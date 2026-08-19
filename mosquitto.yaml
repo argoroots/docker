@@ -34,8 +34,8 @@ services:
     # new anonymous volume on every recreate.
     tmpfs:
       - /tmp
-      - /mosquitto/data
-      - /mosquitto/log
+      - /mosquitto/data:uid=1883,gid=1883
+      - /mosquitto/log:uid=1883,gid=1883
     networks:
       - iot
     logging:
