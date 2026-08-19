@@ -11,10 +11,14 @@ services:
       TZ: Europe/Tallinn
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /home/pi/homeassistant:/config
+      - home-assistant:/config
       - /run/dbus:/run/dbus:ro
     deploy:
       resources:
         limits:
           memory: 2.5G
           cpus: 2.0
+
+volumes:
+  home-assistant:
+    name: home-assistant
