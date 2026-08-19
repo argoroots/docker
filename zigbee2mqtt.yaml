@@ -12,6 +12,7 @@ services:
     # The frontend listens on 9123 (set in configuration.yaml). There is nothing
     # on 8080, so the old 8084:8080 mapping published a closed port.
     ports:
+      - 8084:8080
       - 9123:9123
     volumes:
       - zigbee2mqtt:/app/data
