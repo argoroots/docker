@@ -12,6 +12,7 @@ services:
       - 8082:80
     volumes:
       - file-browser:/database
+      - file-browser-config:/config
       - /mnt:/srv
     user: ${UID:-1000}:${GID:-1000}
     deploy:
@@ -23,3 +24,5 @@ services:
 volumes:
   file-browser:
     name: file-browser
+  file-browser-config:
+    name: file-browser-config
