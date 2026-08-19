@@ -114,7 +114,23 @@ services:
     # docker bridge and veth, where no device can reach it.
     # --bluetooth-adapter: commission Matter devices over BLE from the Pi itself,
     # so no phone is involved and no foreign Thread credentials get handed out.
-    command: --primary-interface wlan0 --bluetooth-adapter 0
+    #
+    # The Thread dataset is held in memory only and is lost on every restart of
+    # this container. Commissioned devices survive (they live in /data), but
+    # pairing a NEW device afterwards fails with "Required network information
+    # not provided ... thread (no)". Re-set it via HA (Matter > Options > Set
+    # Thread credentials) and verify `thread_credentials_set` is true, or push it
+    # directly with the set_thread_dataset command on ws://localhost:5580/ws
+    # using the hex from `ot-ctl dataset active -x`.
+    # --storage-path and --paa-root-cert-dir are the image's own defaults and MUST
+    # be repeated here: setting `command` replaces them wholesale. Without the
+    # storage path the fabric and every commissioned node are written inside the
+    # container and lost on restart.
+    command: >-
+      --storage-path /data
+      --paa-root-cert-dir /data/credentials
+      --primary-interface wlan0
+      --bluetooth-adapter 0
     volumes:
       - /home/pi/matter-server:/data
       - /run/dbus:/run/dbus:ro
