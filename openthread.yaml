@@ -159,6 +159,10 @@ services:
                 sys.exit('gave up waiting for matter-server / otbr')
 
         asyncio.run(main())
+    # The image declares /data as a volume; tmpfs stops Docker creating a new
+    # anonymous volume every time this one-shot runs. It stores nothing.
+    tmpfs:
+      - /data
     deploy:
       resources:
         limits:
