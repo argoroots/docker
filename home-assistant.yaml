@@ -18,6 +18,14 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - home-assistant:/config
       - /run/dbus:/run/dbus:ro
+    # HA can hang with the process still alive. Long start_period: a cold start
+    # takes a couple of minutes and must not be flagged unhealthy meanwhile.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8123/ >/dev/null || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
     logging:
       driver: json-file
       options:
