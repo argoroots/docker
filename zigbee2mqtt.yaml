@@ -9,8 +9,7 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
-    # The frontend listens on 9123 (set in configuration.yaml). There is nothing
-    # on 8080, so the old 8084:8080 mapping published a closed port.
+    # The frontend listens on 9123, set in configuration.yaml.
     ports:
       - 8084:8080
       - 9123:9123
