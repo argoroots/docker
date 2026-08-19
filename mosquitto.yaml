@@ -15,6 +15,12 @@ services:
         exec mosquitto -c /tmp/mosquitto.conf
     ports:
       - 1883:1883
+    # The image declares these as volumes; tmpfs stops Docker creating a new
+    # anonymous volume on every recreate. Persistence is off and logs go to
+    # stdout, so nothing here needs to survive a restart.
+    tmpfs:
+      - /mosquitto/data
+      - /mosquitto/log
     networks:
       - iot
     deploy:
