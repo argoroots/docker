@@ -24,3 +24,4 @@ services:
 volumes:
   portainer:
     name: portainer
+    external: true
