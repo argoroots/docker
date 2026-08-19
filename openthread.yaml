@@ -72,7 +72,7 @@ services:
       OT_THREAD_IF: wpan0
       OTBR_ENABLE_TD_SERVER: "1"
     volumes:
-      - /home/pi/openthread:/data
+      - openthread:/data
     devices:
       - /dev/serial/by-id/${THREAD_TONGLE_ID}:/dev/ttyUSB0
       - /dev/net/tun:/dev/net/tun
@@ -104,7 +104,7 @@ services:
       --primary-interface wlan0
       --bluetooth-adapter 0
     volumes:
-      - /home/pi/matter-server:/data
+      - matter-server:/data
       - /run/dbus:/run/dbus:ro
     deploy:
       resources:
@@ -164,3 +164,9 @@ services:
         limits:
           memory: 256M
           cpus: 0.25
+
+volumes:
+  openthread:
+    name: openthread
+  matter-server:
+    name: matter-server
