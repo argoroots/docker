@@ -12,6 +12,13 @@ services:
       TZ: Europe/Tallinn
     volumes:
       - music-assistant:/data
+      - /mnt/ssd2/CD:/media/CD:ro
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import socket; socket.create_connection(('127.0.0.1', 8095), 5)\""]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     logging:
       driver: json-file
       options:
