@@ -1,15 +1,21 @@
 #!/usr/sbin/nft -f
-# Firewall for traffic to the Pi itself (input hook), i.e. the host-network services. Docker's published ports and OTBR's Thread routing go through the forward hook and are untouched.
+# Firewall for the Pi: the input hook covers traffic to the Pi itself (host-network services); the forward hook covers only Docker-published ports of the web UIs served through Caddy. OTBR's Thread routing is untouched.
 # Own table, so Docker's and OTBR's rules are never touched; never add `flush ruleset` here.
 
 table inet host_firewall
 delete table inet host_firewall
 
 table inet host_firewall {
-    # 22 SSH, 80/443 Caddy, 3000 Homepage, 6052 ESPHome, 8095 Music Assistant UI, 8097 Music Assistant audio stream (fetched by players), 8123 Home Assistant, 32400 Plex. The Beszel agent needs no port: it connects out to the hub over WebSocket.
+    # 22 SSH, 80/443 Caddy, 8097 Music Assistant audio stream (fetched by players), 32400 Plex. The Beszel agent needs no port: it connects out to the hub over WebSocket.
     set lan_tcp {
         type inet_service
-        elements = { 22, 80, 443, 3000, 6052, 8095, 8097, 8123, 32400 }
+        elements = { 22, 80, 443, 8097, 32400 }
+    }
+
+    # Web UIs served only through Caddy: 3000 Homepage, 6052 ESPHome, 8082 File Browser, 8095 Music Assistant, 8123 Home Assistant, 9123 Zigbee2MQTT, 9443 Portainer. Caddy reaches them from the Pi itself, which neither hook below filters.
+    set proxied_tcp {
+        type inet_service
+        elements = { 3000, 6052, 8082, 8095, 8123, 9123, 9443 }
     }
 
     # 68 DHCPv4 client, 443 Caddy HTTP/3, 546 DHCPv6 client, 5353 unicast mDNS replies, 5540 Matter.
@@ -35,9 +41,19 @@ table inet host_firewall {
 
         tcp dport @lan_tcp accept
         udp dport @lan_udp accept
+        tcp dport @proxied_tcp drop
 
-        # Everything else is logged. Log-only mode: once `journalctl -k -g host-firewall` stays quiet, change the `accept` below to `drop`.
+        # Everything else is logged; `accept` below is log-only mode, `drop` once the log stays quiet (see README).
         limit rate 10/minute burst 20 packets log prefix "host-firewall: " level info
         accept
+    }
+
+    # Docker redirects its published ports (DNAT) to the container, so that traffic is forwarded, never seen by input. Matched on the port as published on the host, not the container's.
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+
+        iifname { "docker0", "wpan0" } accept
+        iifname "br-*" accept
+        ct status dnat meta l4proto tcp ct original proto-dst @proxied_tcp drop
     }
 }

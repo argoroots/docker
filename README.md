@@ -1,87 +1,79 @@
 # Home Server
 
-Docker services on a Raspberry Pi. Each `*.yaml` is one Portainer stack, deployed from this repo; pushing to `main` redeploys them. Secrets are set as stack environment variables in Portainer, never committed.
+Docker services on a Raspberry Pi (`192.168.1.2`). Each `*.yaml` is one Portainer stack deployed from this repo; pushing to `main` redeploys them. Secrets are Portainer stack environment variables, never committed.
 
-## Stacks
+## Services
 
-| File | Services | UI | Stack env |
+| File | What | Address | Stack env |
 | --- | --- | --- | --- |
 | `beszel-agent.yaml` | Beszel monitoring agent (CPU, memory, disks, S.M.A.R.T.) | – | `BESZEL_KEY`, `BESZEL_TOKEN` |
-| `caddy.yaml` | Caddy reverse proxy: HTTPS on `*.pi.roots.ee` for the services below | :443 | `DO_AUTH_TOKEN` |
-| `esphome.yaml` | ESPHome | :6052 | `USERNAME`, `PASSWORD` |
-| `file-browser.yaml` | File Browser over `/mnt` | :8082 | `USERNAME`, `PASSWORD`, optional `UID`, `GID` |
-| `home-assistant.yaml` | Home Assistant | :8123 | – |
-| `homepage.yaml` | Homepage start page: a tile per service with up/down status, plus CPU, memory, temperature, network and disk use. Its config is written in this file. | `https://pi.roots.ee`, :3000 | – |
-| `music-assistant.yaml` | Music Assistant | :8095 | – |
-| `openthread.yaml` | OpenThread border router, Matter server, Thread credentials watcher, host sysctls | – | `THREAD_TONGLE_ID` |
-| `plex.yaml` | Plex | :32400 | – |
-| `portainer.yaml` | Portainer, applied by hand (see the file header) | :9443 | – |
-| `zigbee2mqtt.yaml` | Zigbee2MQTT and its Mosquitto MQTT broker (localhost only, also used by HA) | :9123 | `ZIGBEE_TONGLE_ID` |
+| `caddy.yaml` | Reverse proxy: HTTPS for the addresses in this table | – | `DO_AUTH_TOKEN` |
+| `esphome.yaml` | ESPHome | `https://esphome.pi.roots.ee` | `USERNAME`, `PASSWORD` |
+| `file-browser.yaml` | File Browser over `/mnt` | `https://files.pi.roots.ee` | `USERNAME`, `PASSWORD`, optional `UID`, `GID` |
+| `home-assistant.yaml` | Home Assistant | `https://ha.pi.roots.ee` | – |
+| `homepage.yaml` | Start page linking everything, with system stats | `https://pi.roots.ee` | – |
+| `music-assistant.yaml` | Music Assistant | `https://music.pi.roots.ee` | – |
+| `openthread.yaml` | Thread border router, Matter server, Thread credentials watcher, host sysctls | – | `THREAD_TONGLE_ID` |
+| `plex.yaml` | Plex; apps connect to 32400 directly | `https://plex.pi.roots.ee` | – |
+| `portainer.yaml` | Portainer; applied by hand, see the file header | `https://portainer.pi.roots.ee` | – |
+| `zigbee2mqtt.yaml` | Zigbee2MQTT and its Mosquitto broker (localhost only, also used by HA) | `https://z2m.pi.roots.ee` | `ZIGBEE_TONGLE_ID` |
 
-`*_TONGLE_ID` is the dongle's name under `/dev/serial/by-id/`. List the plugged-in dongles with:
+`*_TONGLE_ID` is the dongle's file name in `ls -l /dev/serial/by-id/`, without the path.
 
-```sh
-ls -l /dev/serial/by-id/
-```
+## Access
 
-Use the file name only, without the path, e.g. `usb-Nabu_Casa_SkyConnect_v1.0_<serial>-if00-port0`.
+Caddy serves every web UI over HTTPS (Let's Encrypt, DNS challenge via DigitalOcean). The names resolve to the Pi's LAN IP, so they work only at home.
 
-## HTTPS
+The firewall blocks direct access to the proxied UIs; only Plex's 32400 stays open for its apps. If Caddy breaks:
 
-Caddy serves the web UIs on subdomains of `pi.roots.ee`, using a Let's Encrypt wildcard certificate, plus a second certificate for the bare name:
+- `sudo systemctl stop host-firewall` reopens all ports (start it again afterwards), or
+- tunnel one UI: `ssh -L 8123:127.0.0.1:8123 pi@192.168.1.2`, then `http://localhost:8123`.
 
-| URL | Service |
-| --- | --- |
-| `https://pi.roots.ee` | Homepage, links to everything below |
-| `https://ha.pi.roots.ee` | Home Assistant |
-| `https://z2m.pi.roots.ee` | Zigbee2MQTT |
-| `https://esphome.pi.roots.ee` | ESPHome |
-| `https://music.pi.roots.ee` | Music Assistant |
-| `https://files.pi.roots.ee` | File Browser |
-| `https://portainer.pi.roots.ee` | Portainer |
+## Setup outside this repo
 
-Plex is not proxied; its apps already use HTTPS through Plex's own certificates.
+**UniFi**
+- DHCP reservation `192.168.1.2` for the Pi, so DNS stays valid.
 
-The certificate is issued with a DNS challenge through the DigitalOcean API, so nothing on the Pi is opened to the internet. The names point at the Pi's LAN IP, so they only work at home.
+**DigitalOcean** (Domains → `roots.ee`)
+- `A` records `pi` and `*.pi` → `192.168.1.2`. Not a `CNAME`: it breaks the certificate challenge.
+- API token, scope `domain` (create, read, update, delete), as `DO_AUTH_TOKEN` on the `caddy` stack. Caddy uses it for the challenge records.
 
-The official Caddy image has no DNS plugins, so `caddy.yaml` builds its own image from the official `caddy:builder` and `caddy` images. To update Caddy, redeploy the stack with a rebuild.
+**Home Assistant** (Settings → System → Network)
+- **Trust X-Forwarded-For** on, **Trusted proxies** `127.0.0.1/32` and `::1/128`. Otherwise HA rejects Caddy with `400`. Change it directly on `:8123`, not through Caddy, since HA asks to confirm after the restart.
+- **Local network URL** `https://ha.pi.roots.ee`, so links and speakers use the reachable address.
 
-One-time setup:
+**Zigbee2MQTT** (Settings → Frontend)
+- **url** `https://z2m.pi.roots.ee`, so links point to the reachable address. Leave **host** empty: Docker's port forwarding needs it listening on all interfaces.
 
-1. In the UniFi console, give the Pi a fixed IP (DHCP reservation).
-2. In DigitalOcean, under Networking → Domains → `roots.ee`, add two `A` records with the Pi's LAN IP as the value: hostname `pi` and hostname `*.pi`.
-3. In DigitalOcean, under API, create a token with custom scopes `domain: create, read, update, delete`. Caddy uses it only to add and remove the challenge's TXT records.
-4. Tell Home Assistant to trust the proxy. In HA, under Settings → System → Network, turn on **Trust X-Forwarded-For** and add `127.0.0.1/32` and `::1/128` to **Trusted proxies**. Saving restarts HA, and you must confirm the new settings within 5 minutes, so do this at `http://<pi-ip>:8123`, not through the proxy. Without it, HA answers every proxied request with `400 Bad Request`. Since HA 2026.8 these are UI settings; an `http:` block in `configuration.yaml` is ignored.
-5. Create the `caddy` stack in Portainer from `caddy.yaml` with `DO_AUTH_TOKEN` set. The first start takes a minute or two while the certificate is issued; follow it with `docker logs -f caddy`.
-6. Open `https://ha.pi.roots.ee`. Then update the URLs the apps hand out:
-   - HA → Settings → System → Network: set the local network URL to `https://ha.pi.roots.ee`.
-   - Zigbee2MQTT `configuration.yaml`: set `frontend.url` to `https://z2m.pi.roots.ee`.
+**Caddy**
+- Built on the Pi to include the DigitalOcean plugin. To update: `docker pull caddy:builder && docker pull caddy:latest`, then redeploy.
 
 ## Host scripts
 
-These run on the Pi through systemd, not from Portainer, because they control Docker itself.
-
-### Autoheal (`autoheal/`)
-
-Docker only marks a container `unhealthy`; it never restarts it. Every minute, this restarts any container that has the label `autoheal: "true"` and is unhealthy. To include a service, give it a healthcheck and that label.
-
-Install, or re-install after changing the files:
+Installed on the Pi with systemd, since they control Docker. Run from the script's folder; repeat after a change.
 
 ```sh
-cd autoheal
-sudo install -m 755 docker-autoheal.sh /usr/local/bin/docker-autoheal.sh
+# autoheal/
+sudo install -m 755 docker-autoheal.sh /usr/local/bin/
 sudo install -m 644 docker-autoheal.service docker-autoheal.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now docker-autoheal.timer
+sudo systemctl daemon-reload && sudo systemctl enable --now docker-autoheal.timer
+
+# backup/
+sudo install -m 755 docker-backup.sh /usr/local/bin/
+sudo install -m 644 docker-backup.service docker-backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now docker-backup.timer
+
+# firewall/
+sudo apt install -y nftables
+sudo nft -c -f host-firewall.nft
+sudo install -m 644 host-firewall.nft /etc/
+sudo install -m 644 host-firewall.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now host-firewall
 ```
 
-Restarts are logged in `journalctl -u docker-autoheal`.
+**Autoheal:** every minute, restarts containers that are `unhealthy` and labelled `autoheal: "true"`. Docker only marks them. Log: `journalctl -u docker-autoheal`.
 
-### Backup (`backup/`)
-
-Every night at 04:00, all Docker volumes are backed up to a restic repository at `/mnt/ssd1/Backup/docker`. Containers with SQLite databases are stopped for about a minute while it runs. Keeps 7 daily, 4 weekly and 6 monthly snapshots.
-
-One-time setup:
+**Backup:** nightly at 04:00, all Docker volumes to restic at `/mnt/ssd1/Backup/docker` (7 daily, 4 weekly, 6 monthly). SQLite containers stop for about a minute. One-time setup; keep the passphrase off the Pi too:
 
 ```sh
 sudo apt install -y restic
@@ -90,44 +82,6 @@ sudo chmod 600 /root/.restic-password
 sudo restic init --repo /mnt/ssd1/Backup/docker
 ```
 
-Keep a copy of the passphrase off the Pi; without it the backups can't be read.
+Run now: `sudo systemctl start docker-backup`. Log: `journalctl -u docker-backup`.
 
-Install, or re-install after changing the files:
-
-```sh
-cd backup
-sudo install -m 755 docker-backup.sh /usr/local/bin/docker-backup.sh
-sudo install -m 644 docker-backup.service docker-backup.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now docker-backup.timer
-```
-
-Run it now with `sudo systemctl start docker-backup`, check its log with `journalctl -u docker-backup`, and list snapshots with `sudo restic -r /mnt/ssd1/Backup/docker -p /root/.restic-password snapshots`.
-
-### Firewall (`firewall/`)
-
-An nftables firewall for traffic to the Pi itself, which is what the host-network services listen on. LAN devices can reach only the ports listed in `host-firewall.nft`; the Thread mesh, container networks, ICMP and multicast discovery are always allowed. Ports published by bridge-network containers (File Browser, Portainer, Zigbee2MQTT) and OTBR's Thread routing are not affected. It lives in its own table, so Docker's and OTBR's rules are left alone.
-
-It ships in log-only mode: anything not allowed is logged but still let through.
-
-Install, or re-install after changing the files:
-
-```sh
-cd firewall
-sudo apt install -y nftables
-sudo nft -c -f host-firewall.nft
-sudo install -m 644 host-firewall.nft /etc/host-firewall.nft
-sudo install -m 644 host-firewall.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now host-firewall
-```
-
-`nft -c` only checks the syntax. Don't enable `nftables.service`: Debian's `/etc/nftables.conf` starts with `flush ruleset`, which would wipe Docker's rules.
-
-Rollout:
-
-1. Run in log-only mode for a week and watch `journalctl -k -g host-firewall`. Each line is traffic that would be dropped.
-2. Add ports for anything legitimate (e.g. an HA integration that receives callbacks) to `lan_tcp` / `lan_udp`, re-install, and run `sudo systemctl reload host-firewall`.
-3. Once the log stays quiet, change the final `accept` to `drop`, re-install and reload.
-
-If something breaks, `sudo systemctl stop host-firewall` removes the table at once. SSH (22) is always allowed.
+**Firewall:** own nftables table, so Docker's and OTBR's rules stay intact. Don't enable `nftables.service`: its default config wipes them. Log-only for now, except the proxied UIs: watch `journalctl -k -g host-firewall` for a week, open what's legitimate, then change the final `accept` to `drop`. After editing: `sudo systemctl reload host-firewall`.

@@ -1,19 +1,5 @@
 #!/usr/bin/env bash
-#
-# Nightly backup of all Docker volumes into a restic repository on /mnt/ssd1.
-#
-# Installed on the host, not deployed by Portainer -- it has to stop containers, so it must not depend on Docker being healthy:
-#   sudo install -m 755 docker-backup.sh /usr/local/bin/docker-backup.sh
-#   sudo install -m 644 docker-backup.{service,timer} /etc/systemd/system/
-#   sudo systemctl daemon-reload && sudo systemctl enable --now docker-backup.timer
-#
-# One-time setup:
-#   sudo apt install -y restic
-#   printf '%s' 'a-long-random-passphrase' | sudo tee /root/.restic-password
-#   sudo chmod 600 /root/.restic-password
-#   sudo restic init --repo /mnt/ssd1/Backup/docker
-#
-# Keep a copy of that passphrase somewhere off this machine. Without it the repository is unreadable, and a backup you cannot decrypt is not a backup.
+# Nightly backup of all Docker volumes into a restic repository on /mnt/ssd1. Installed on the host, as it has to stop containers; setup and install in README.
 
 set -euo pipefail
 

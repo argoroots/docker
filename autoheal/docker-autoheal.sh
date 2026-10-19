@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-#
-# Restarts containers labelled autoheal=true once Docker reports them unhealthy; Docker itself only marks them, restart policies act on exit, not on health.
-#
-# Installed on the host, not deployed by Portainer, so no third-party image needs the Docker socket:
-#   sudo install -m 755 docker-autoheal.sh /usr/local/bin/docker-autoheal.sh
-#   sudo install -m 644 docker-autoheal.{service,timer} /etc/systemd/system/
-#   sudo systemctl daemon-reload && sudo systemctl enable --now docker-autoheal.timer
+# Restarts containers labelled autoheal=true once Docker reports them unhealthy. Installed on the host; see README.
 
 set -euo pipefail
 

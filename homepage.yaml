@@ -3,7 +3,7 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: unless-stopped
-    # Host networking so network usage sees the Pi's real interfaces. Listens on :3000 (allowed in the host firewall); Caddy serves it as https://pi.roots.ee.
+    # Host networking so network usage sees the Pi's real interfaces. Listens on :3000.
     network_mode: host
     cap_drop:
       - all
@@ -11,7 +11,7 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
-      # Homepage refuses requests for any other Host header; the IP is the fallback when DNS or Caddy is down.
+      # Homepage refuses requests for any other Host header; the IP is for when the firewall is stopped.
       HOMEPAGE_ALLOWED_HOSTS: pi.roots.ee,192.168.1.2:3000
     # Homepage has no env-var configuration for services, so the config is written at start into a tmpfs; this file is the only place it lives.
     entrypoint: ["sh", "-c"]
@@ -68,7 +68,7 @@ services:
                 siteMonitor: https://music.pi.roots.ee
             - Plex:
                 icon: plex.png
-                href: https://app.plex.tv/desktop
+                href: https://plex.pi.roots.ee
                 siteMonitor: http://127.0.0.1:32400/identity
         - Tesla:
             - Grafana:

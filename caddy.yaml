@@ -1,6 +1,5 @@
 services:
   caddy:
-    # The official image has no DNS provider plugins, so the DigitalOcean one is compiled in from the official builder image; no third-party image involved.
     build:
       context: .
       dockerfile_inline: |
@@ -13,7 +12,7 @@ services:
     pull_policy: build
     container_name: caddy
     restart: unless-stopped
-    # Host networking so every service is reachable at 127.0.0.1, whether it runs on the host network or publishes to localhost.
+    # Host networking so every service is reachable at 127.0.0.1.
     network_mode: host
     cap_drop:
       - all
@@ -24,9 +23,8 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
-      # DigitalOcean API token with read/write access to the roots.ee domain; Caddy uses it to create the ACME DNS-01 TXT records.
       DO_AUTH_TOKEN: ${DO_AUTH_TOKEN}
-    # The Caddyfile is written at start, like Mosquitto's config, so the whole proxy setup lives in this file. A wildcard certificate covers every subdomain, a second one the bare pi.roots.ee; both names point at the Pi's LAN IP in public DNS, so nothing is reachable from the internet.
+    # The Caddyfile is written at start, like Mosquitto's config, so the whole proxy setup lives in this file.
     command:
       - sh
       - -c
@@ -38,7 +36,6 @@ services:
         	}
         }
 
-        # The wildcard certificate does not cover the bare name, so it gets its own; Homepage lives here.
         pi.roots.ee {
         	import dns
         	reverse_proxy 127.0.0.1:3000
@@ -70,6 +67,13 @@ services:
         	@files host files.pi.roots.ee
         	handle @files {
         		reverse_proxy 127.0.0.1:8082
+        	}
+
+        	# Web player only; Plex apps connect to 32400 directly. Plex's root path serves XML, so it goes to the player.
+        	@plex host plex.pi.roots.ee
+        	handle @plex {
+        		redir / /web/
+        		reverse_proxy 127.0.0.1:32400
         	}
 
         	# Portainer only serves HTTPS with its own self-signed certificate.
