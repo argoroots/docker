@@ -21,20 +21,36 @@ services:
         title: Pi
         headerStyle: clean
         statusStyle: dot
+        # Groups and services are kept in alphabetical order; Homepage shows them in the order listed.
+        # style: column puts the groups side by side, each one's services stacked.
         layout:
-          Home:
-            style: row
-            columns: 3
-          Media:
-            style: row
-            columns: 3
           Admin:
-            style: row
-            columns: 3
+            style: column
+          Home:
+            style: column
+          Media:
+            style: column
         EOF
 
         cat > /app/config/services.yaml <<'EOF'
+        - Admin:
+            - Beszel:
+                icon: beszel.png
+                href: https://d.tesla.roots.ee
+                siteMonitor: https://d.tesla.roots.ee
+            - File Browser:
+                icon: filebrowser.png
+                href: https://files.pi.roots.ee
+                siteMonitor: https://files.pi.roots.ee
+            - Portainer:
+                icon: portainer.png
+                href: https://portainer.pi.roots.ee
+                siteMonitor: https://portainer.pi.roots.ee
         - Home:
+            - ESPHome:
+                icon: esphome.png
+                href: https://esphome.pi.roots.ee
+                siteMonitor: https://esphome.pi.roots.ee
             - Home Assistant:
                 icon: home-assistant.png
                 href: https://ha.pi.roots.ee
@@ -43,32 +59,15 @@ services:
                 icon: zigbee2mqtt.png
                 href: https://z2m.pi.roots.ee
                 siteMonitor: https://z2m.pi.roots.ee
-            - ESPHome:
-                icon: esphome.png
-                href: https://esphome.pi.roots.ee
-                siteMonitor: https://esphome.pi.roots.ee
         - Media:
-            - Plex:
-                icon: plex.png
-                href: https://app.plex.tv/desktop
-                siteMonitor: http://127.0.0.1:32400/identity
             - Music Assistant:
                 icon: music-assistant.png
                 href: https://music.pi.roots.ee
                 siteMonitor: https://music.pi.roots.ee
-        - Admin:
-            - Portainer:
-                icon: portainer.png
-                href: https://portainer.pi.roots.ee
-                siteMonitor: https://portainer.pi.roots.ee
-            - File Browser:
-                icon: filebrowser.png
-                href: https://files.pi.roots.ee
-                siteMonitor: https://files.pi.roots.ee
-            - Beszel:
-                icon: beszel.png
-                href: https://d.tesla.roots.ee
-                siteMonitor: https://d.tesla.roots.ee
+            - Plex:
+                icon: plex.png
+                href: https://app.plex.tv/desktop
+                siteMonitor: http://127.0.0.1:32400/identity
         EOF
 
         cat > /app/config/widgets.yaml <<'EOF'
@@ -89,11 +88,6 @@ services:
         - resources:
             label: SSD2
             disk: /mnt/ssd2
-        - datetime:
-            format:
-              dateStyle: long
-              timeStyle: short
-              hourCycle: h23
         EOF
 
         # Empty, or Homepage fills it with its example bookmarks.
