@@ -1,0 +1,43 @@
+#!/usr/sbin/nft -f
+# Firewall for traffic to the Pi itself (input hook), i.e. the host-network services. Docker's published ports and OTBR's Thread routing go through the forward hook and are untouched.
+# Own table, so Docker's and OTBR's rules are never touched; never add `flush ruleset` here.
+
+table inet host_firewall
+delete table inet host_firewall
+
+table inet host_firewall {
+    # 22 SSH, 6052 ESPHome, 8095 Music Assistant UI, 8097 Music Assistant audio stream (fetched by players), 8123 Home Assistant, 32400 Plex, 45876 Beszel agent.
+    set lan_tcp {
+        type inet_service
+        elements = { 22, 6052, 8095, 8097, 8123, 32400, 45876 }
+    }
+
+    # 68 DHCPv4 client, 546 DHCPv6 client, 5353 unicast mDNS replies, 5540 Matter.
+    set lan_udp {
+        type inet_service
+        elements = { 68, 546, 5353, 5540 }
+    }
+
+    chain input {
+        type filter hook input priority filter; policy accept;
+
+        iif lo accept
+        ct state established,related accept
+        # IPv6 does not work without ICMPv6 (neighbour discovery, router advertisements).
+        meta l4proto { icmp, ipv6-icmp } accept
+
+        # The Thread mesh and container networks are trusted.
+        iifname { "wpan0", "docker0" } accept
+        iifname "br-*" accept
+
+        # Multicast and broadcast carry discovery (mDNS, SSDP, Plex GDM, AirPlay); services are only reachable through unicast, which is filtered below.
+        meta pkttype { broadcast, multicast } accept
+
+        tcp dport @lan_tcp accept
+        udp dport @lan_udp accept
+
+        # Everything else is logged. Log-only mode: once `journalctl -k -g host-firewall` stays quiet, change the `accept` below to `drop`.
+        limit rate 10/minute burst 20 packets log prefix "host-firewall: " level info
+        accept
+    }
+}

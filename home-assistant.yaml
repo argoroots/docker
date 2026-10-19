@@ -4,22 +4,23 @@ services:
     container_name: home-assistant
     restart: unless-stopped
     network_mode: host
-    # No cap_drop here: the s6 init runs as root and fixes ownership under
-    # /config, which needs CAP_DAC_OVERRIDE/CHOWN. Dropping all capabilities
-    # makes root unable to write there and HA exits on startup.
+    # No cap_drop here: the s6 init runs as root and fixes ownership under /config, which needs CAP_DAC_OVERRIDE/CHOWN; without them HA exits on startup.
     cap_add:
       - NET_ADMIN
       - NET_RAW
     security_opt:
       - no-new-privileges:true
+    # The default 10 s is too short for HA to flush its recorder database.
+    stop_grace_period: 60s
     environment:
       TZ: Europe/Tallinn
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - home-assistant:/config
       - /run/dbus:/run/dbus:ro
-    # HA can hang with the process still alive. Long start_period: a cold start
-    # takes a couple of minutes and must not be flagged unhealthy meanwhile.
+    # HA can hang with the process still alive. Long start_period: a cold start takes a couple of minutes and must not be flagged unhealthy meanwhile.
+    labels:
+      autoheal: "true"
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8123/ >/dev/null || exit 1"]
       interval: 60s

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for unhealthy Docker containers every minute
+
+[Timer]
+# The healthchecks themselves take ~3 minutes to flag a container, so a one-minute check adds little delay.
+OnBootSec=5min
+OnUnitActiveSec=1min
+
+[Install]
+WantedBy=timers.target

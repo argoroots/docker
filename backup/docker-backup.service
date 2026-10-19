@@ -1,0 +1,12 @@
+[Unit]
+Description=Back up Docker volumes to restic repository on /mnt/ssd1
+Requires=docker.service
+After=docker.service
+# Pulls in and orders after the mount; without the SSD the repo path is missing.
+RequiresMountsFor=/mnt/ssd1
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/docker-backup.sh
+Nice=10
+IOSchedulingClass=idle

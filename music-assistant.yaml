@@ -13,6 +13,8 @@ services:
     volumes:
       - music-assistant:/data
       - /mnt/ssd2/CD:/media/CD:ro
+    labels:
+      autoheal: "true"
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import socket; socket.create_connection(('127.0.0.1', 8095), 5)\""]
       interval: 60s

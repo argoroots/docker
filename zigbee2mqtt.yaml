@@ -1,8 +1,64 @@
 services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    cap_drop:
+      - all
+    # Mosquitto starts as root and drops to the mosquitto user; without these it cannot make that switch and exits.
+    cap_add:
+      - SETUID
+      - SETGID
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    environment:
+      TZ: Europe/Tallinn
+    # Mosquitto has no env-var configuration, so the config is written at start. Persistence is deliberately off; nothing here needs retained state.
+    command:
+      - sh
+      - -c
+      - |
+        printf 'listener 1883 0.0.0.0\nallow_anonymous true\n' > /tmp/mosquitto.conf
+        exec mosquitto -c /tmp/mosquitto.conf
+    # Published to localhost only: HA reaches it at 127.0.0.1 over host networking, Zigbee2MQTT as mosquitto:1883 on this stack's network. Nothing on the LAN can connect, which is what makes allow_anonymous acceptable.
+    ports:
+      - 127.0.0.1:1883:1883
+    # /tmp holds the generated config, so it must be writable under read_only. The image declares the other two as volumes; tmpfs stops Docker creating a new anonymous volume on every recreate.
+    tmpfs:
+      - /tmp
+      - /mosquitto/data:uid=1883,gid=1883
+      - /mosquitto/log:uid=1883,gid=1883
+    # A publish proves the broker is actually accepting connections, not just that the process is alive.
+    labels:
+      autoheal: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h 127.0.0.1 -t healthcheck -m ok || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+      # Checked every 5 s while starting, so Zigbee2MQTT is not held back a full interval.
+      start_interval: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: 0.5
+
   zigbee2mqtt:
     image: ghcr.io/koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
     restart: unless-stopped
+    # Only applies on deploy; after a reboot Docker starts both at once and Zigbee2MQTT may restart until the broker is up.
+    depends_on:
+      mosquitto:
+        condition: service_healthy
     cap_drop:
       - all
     security_opt:
@@ -18,9 +74,9 @@ services:
       - /run/udev:/run/udev:ro
     devices:
       - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
-    networks:
-      - iot
-    # The container stays "Up" when the coordinator wedges; this catches that.
+    # The container stays "Up" when the process hangs; this catches that.
+    labels:
+      autoheal: "true"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9123/ || exit 1"]
       interval: 60s
@@ -41,8 +97,3 @@ services:
 volumes:
   zigbee2mqtt:
     name: zigbee2mqtt
-
-networks:
-  iot:
-    name: iot
-    external: true

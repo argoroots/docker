@@ -1,0 +1,8 @@
+[Unit]
+Description=Restart unhealthy Docker containers labelled autoheal=true
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/docker-autoheal.sh

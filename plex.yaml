@@ -4,18 +4,17 @@ services:
     container_name: plex
     restart: unless-stopped
     network_mode: host
-    # No cap_drop here: the entrypoint chowns /config and drops to the plex user,
-    # which needs CHOWN/FOWNER/SETUID/SETGID/DAC_OVERRIDE.
+    # No cap_drop here: the entrypoint chowns /config and drops to the plex user, which needs CHOWN/FOWNER/SETUID/SETGID/DAC_OVERRIDE.
     security_opt:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     volumes:
       - plex:/config
-      - /mnt/ssd1:/data/ssd1
-      - /mnt/ssd2:/data/ssd2
-    # Transcoding scratch in RAM: several GB written and deleted per session,
-    # so keeping it off the NVMe saves write cycles and is faster.
+      # Read-only: Plex never needs to write media, and ssd1 also holds the restic repo.
+      - /mnt/ssd1:/data/ssd1:ro
+      - /mnt/ssd2:/data/ssd2:ro
+    # Transcoding scratch in RAM: several GB written and deleted per session, so keeping it off the NVMe saves write cycles and is faster.
     tmpfs:
       - /transcode:size=2g
     logging:
