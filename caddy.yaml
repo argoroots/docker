@@ -33,7 +33,9 @@ services:
         (dns) {
         	tls {
         		dns digitalocean {env.DO_AUTH_TOKEN}
-        		# Check the challenge record via public DNS; the router's cache served a stale CNAME for hours.
+        		# Caddy's own check that the challenge record is visible kept timing out for pi.roots.ee; give DigitalOcean 30 s, then let Let's Encrypt check it directly.
+        		propagation_delay 30s
+        		propagation_timeout -1
         		resolvers 1.1.1.1 8.8.8.8
         	}
         }
