@@ -12,10 +12,10 @@ table inet host_firewall {
         elements = { 22, 80, 443, 6052, 8095, 8097, 8123, 32400 }
     }
 
-    # 68 DHCPv4 client, 546 DHCPv6 client, 5353 unicast mDNS replies, 5540 Matter.
+    # 68 DHCPv4 client, 443 Caddy HTTP/3, 546 DHCPv6 client, 5353 unicast mDNS replies, 5540 Matter.
     set lan_udp {
         type inet_service
-        elements = { 68, 546, 5353, 5540 }
+        elements = { 68, 443, 546, 5353, 5540 }
     }
 
     chain input {

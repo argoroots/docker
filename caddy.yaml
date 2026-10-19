@@ -24,44 +24,44 @@ services:
       TZ: Europe/Tallinn
       # DigitalOcean API token with read/write access to the roots.ee domain; Caddy uses it to create the ACME DNS-01 TXT records.
       DO_AUTH_TOKEN: ${DO_AUTH_TOKEN}
-    # The Caddyfile is written at start, like Mosquitto's config, so the whole proxy setup lives in this file. One wildcard certificate covers every subdomain; *.home.roots.ee points at the Pi's LAN IP in public DNS, so nothing is reachable from the internet.
+    # The Caddyfile is written at start, like Mosquitto's config, so the whole proxy setup lives in this file. One wildcard certificate covers every subdomain; *.pi.roots.ee points at the Pi's LAN IP in public DNS, so nothing is reachable from the internet.
     command:
       - sh
       - -c
       - |
         cat > /etc/caddy/Caddyfile <<'EOF'
-        *.home.roots.ee {
+        *.pi.roots.ee {
         	tls {
         		dns digitalocean {env.DO_AUTH_TOKEN}
         	}
 
-        	@ha host ha.home.roots.ee
+        	@ha host ha.pi.roots.ee
         	handle @ha {
         		reverse_proxy 127.0.0.1:8123
         	}
 
-        	@z2m host z2m.home.roots.ee
+        	@z2m host z2m.pi.roots.ee
         	handle @z2m {
         		reverse_proxy 127.0.0.1:9123
         	}
 
-        	@esphome host esphome.home.roots.ee
+        	@esphome host esphome.pi.roots.ee
         	handle @esphome {
         		reverse_proxy 127.0.0.1:6052
         	}
 
-        	@music host music.home.roots.ee
+        	@music host music.pi.roots.ee
         	handle @music {
         		reverse_proxy 127.0.0.1:8095
         	}
 
-        	@files host files.home.roots.ee
+        	@files host files.pi.roots.ee
         	handle @files {
         		reverse_proxy 127.0.0.1:8082
         	}
 
         	# Portainer only serves HTTPS with its own self-signed certificate.
-        	@portainer host portainer.home.roots.ee
+        	@portainer host portainer.pi.roots.ee
         	handle @portainer {
         		reverse_proxy https://127.0.0.1:9443 {
         			transport http {
