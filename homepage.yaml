@@ -19,8 +19,8 @@ services:
       - |
         cat > /app/config/settings.yaml <<'EOF'
         title: Pi
-        headerStyle: clean
-        statusStyle: dot
+        headerStyle: boxedWidgets
+        cardStyle: hairline
         # Groups and services are kept in alphabetical order; Homepage shows them in the order listed.
         # style: column puts the groups side by side, each one's services stacked.
         layout:
