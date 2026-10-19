@@ -18,7 +18,7 @@ services:
     command:
       - |
         cat > /app/config/settings.yaml <<'EOF'
-        title: Docker.local
+        title: Raspberry PI
         headerStyle: boxedWidgets
         cardStyle: hairline
         # Groups and services are kept in alphabetical order; Homepage shows them in the order listed.
@@ -110,9 +110,10 @@ services:
 
         /* `title` only names the browser tab; this shows it above the stats, styled like the group headings (text-xl, font-medium, theme-800 / dark theme-300). Keep the text in sync with `title`. */
         #information-widgets::before {
-          content: "Docker.local";
+          content: "Raspberry PI";
           flex-basis: 100%;
           padding: 0 0.25rem;
+          margin-top: 4.5rem;
           margin-bottom: 0.5rem;
           font-size: 1.25rem;
           line-height: 1.75rem;
