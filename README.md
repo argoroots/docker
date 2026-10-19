@@ -7,6 +7,7 @@ Docker services on a Raspberry Pi. Each `*.yaml` is one Portainer stack, deploye
 | File | Services | UI | Stack env |
 | --- | --- | --- | --- |
 | `beszel-agent.yaml` | Beszel monitoring agent (CPU, memory, disks, S.M.A.R.T.) | – | `BESZEL_KEY`, `BESZEL_TOKEN` |
+| `caddy.yaml` | Caddy reverse proxy: HTTPS on `*.home.roots.ee` for the services below | :443 | `DO_AUTH_TOKEN` |
 | `esphome.yaml` | ESPHome | :6052 | `USERNAME`, `PASSWORD` |
 | `file-browser.yaml` | File Browser over `/mnt` | :8082 | `USERNAME`, `PASSWORD`, optional `UID`, `GID` |
 | `home-assistant.yaml` | Home Assistant | :8123 | – |
@@ -23,6 +24,46 @@ ls -l /dev/serial/by-id/
 ```
 
 Use the file name only, without the path, e.g. `usb-Nabu_Casa_SkyConnect_v1.0_<serial>-if00-port0`.
+
+## HTTPS
+
+Caddy serves the web UIs on subdomains of `home.roots.ee`, using one Let's Encrypt wildcard certificate:
+
+| URL | Service |
+| --- | --- |
+| `https://ha.home.roots.ee` | Home Assistant |
+| `https://z2m.home.roots.ee` | Zigbee2MQTT |
+| `https://esphome.home.roots.ee` | ESPHome |
+| `https://music.home.roots.ee` | Music Assistant |
+| `https://files.home.roots.ee` | File Browser |
+| `https://portainer.home.roots.ee` | Portainer |
+
+Plex is not proxied; its apps already use HTTPS through Plex's own certificates.
+
+The certificate is issued with a DNS challenge through the DigitalOcean API, so nothing on the Pi is opened to the internet. The names point at the Pi's LAN IP, so they only work at home.
+
+The official Caddy image has no DNS plugins, so `caddy.yaml` builds its own image from the official `caddy:builder` and `caddy` images. To update Caddy, redeploy the stack with a rebuild.
+
+One-time setup:
+
+1. In the UniFi console, give the Pi a fixed IP (DHCP reservation).
+2. In DigitalOcean, under Networking → Domains → `roots.ee`, add an `A` record: hostname `*.home`, value the Pi's LAN IP.
+3. In DigitalOcean, under API, create a token with custom scopes `domain: create, read, update, delete`. Caddy uses it only to add and remove the challenge's TXT records.
+4. Tell Home Assistant to trust the proxy. Add this to its `configuration.yaml`, then restart HA:
+
+   ```yaml
+   http:
+     use_x_forwarded_for: true
+     trusted_proxies:
+       - 127.0.0.1
+       - ::1
+   ```
+
+   Without it, HA answers every proxied request with `400 Bad Request`.
+5. Create the `caddy` stack in Portainer from `caddy.yaml` with `DO_AUTH_TOKEN` set. The first start takes a minute or two while the certificate is issued; follow it with `docker logs -f caddy`.
+6. Open `https://ha.home.roots.ee`. Then update the URLs the apps hand out:
+   - HA → Settings → System → Network: set the local network URL to `https://ha.home.roots.ee`.
+   - Zigbee2MQTT `configuration.yaml`: set `frontend.url` to `https://z2m.home.roots.ee`.
 
 ## Host scripts
 
