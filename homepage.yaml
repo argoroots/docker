@@ -82,6 +82,10 @@ services:
         EOF
 
         cat > /app/config/widgets.yaml <<'EOF'
+        # `title` above only names the browser tab; this shows it on the page.
+        - greeting:
+            text_size: xl
+            text: Docker.local
         - resources:
             label: Pi
             cpu: true
@@ -99,6 +103,14 @@ services:
         - resources:
             label: SSD2
             disk: /mnt/ssd2
+        EOF
+
+        # Service icons are 32 px by default, set inline, hence !important; 24 px leaves more room in the 48 px icon slot.
+        cat > /app/config/custom.css <<'EOF'
+        .service-icon img {
+          width: 24px !important;
+          height: 24px !important;
+        }
         EOF
 
         # Empty, or Homepage fills it with its example bookmarks.
