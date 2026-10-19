@@ -1,0 +1,117 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Europe/Tallinn
+      # Homepage refuses requests for any other Host header.
+      HOMEPAGE_ALLOWED_HOSTS: pi.roots.ee
+    # Homepage has no env-var configuration for services, so the config is written at start into a tmpfs; this file is the only place it lives.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        cat > /app/config/settings.yaml <<'EOF'
+        title: Pi
+        headerStyle: clean
+        layout:
+          Home:
+            style: row
+            columns: 3
+          Media:
+            style: row
+            columns: 3
+          Admin:
+            style: row
+            columns: 3
+        EOF
+
+        cat > /app/config/services.yaml <<'EOF'
+        - Home:
+            - Home Assistant:
+                icon: home-assistant.png
+                href: https://ha.pi.roots.ee
+                siteMonitor: https://ha.pi.roots.ee
+            - Zigbee2MQTT:
+                icon: zigbee2mqtt.png
+                href: https://z2m.pi.roots.ee
+                siteMonitor: https://z2m.pi.roots.ee
+            - ESPHome:
+                icon: esphome.png
+                href: https://esphome.pi.roots.ee
+                siteMonitor: https://esphome.pi.roots.ee
+        - Media:
+            - Plex:
+                icon: plex.png
+                href: https://app.plex.tv/desktop
+                siteMonitor: http://host.docker.internal:32400/identity
+            - Music Assistant:
+                icon: music-assistant.png
+                href: https://music.pi.roots.ee
+                siteMonitor: https://music.pi.roots.ee
+        - Admin:
+            - Portainer:
+                icon: portainer.png
+                href: https://portainer.pi.roots.ee
+                siteMonitor: https://portainer.pi.roots.ee
+            - File Browser:
+                icon: filebrowser.png
+                href: https://files.pi.roots.ee
+                siteMonitor: https://files.pi.roots.ee
+            - Beszel:
+                icon: beszel.png
+                href: https://d.tesla.roots.ee
+                siteMonitor: https://d.tesla.roots.ee
+        EOF
+
+        cat > /app/config/widgets.yaml <<'EOF'
+        - resources:
+            cpu: true
+            memory: true
+            cputemp: true
+            uptime: true
+            units: metric
+            disk:
+              - /
+              - /mnt/ssd1
+              - /mnt/ssd2
+        - datetime:
+            format:
+              dateStyle: long
+              timeStyle: short
+              hourCycle: h23
+        EOF
+
+        # Empty, or Homepage fills it with its example bookmarks.
+        echo '[]' > /app/config/bookmarks.yaml
+
+        exec docker-entrypoint.sh node server.js
+    # Published to localhost only; Caddy serves it as https://pi.roots.ee.
+    ports:
+      - 127.0.0.1:3000:3000
+    # Lets the Plex status check reach Plex, which runs on the host network.
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    # /app/config holds only the generated files and Homepage's logs, so nothing needs to persist. The SSD mounts are read-only and only feed the disk-usage widget.
+    tmpfs:
+      - /app/config
+    volumes:
+      - /mnt/ssd1:/mnt/ssd1:ro
+      - /mnt/ssd2:/mnt/ssd2:ro
+    # The image has its own healthcheck; the label lets autoheal act on it.
+    labels:
+      autoheal: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5

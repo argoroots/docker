@@ -26,16 +26,26 @@ services:
       TZ: Europe/Tallinn
       # DigitalOcean API token with read/write access to the roots.ee domain; Caddy uses it to create the ACME DNS-01 TXT records.
       DO_AUTH_TOKEN: ${DO_AUTH_TOKEN}
-    # The Caddyfile is written at start, like Mosquitto's config, so the whole proxy setup lives in this file. One wildcard certificate covers every subdomain; *.pi.roots.ee points at the Pi's LAN IP in public DNS, so nothing is reachable from the internet.
+    # The Caddyfile is written at start, like Mosquitto's config, so the whole proxy setup lives in this file. A wildcard certificate covers every subdomain, a second one the bare pi.roots.ee; both names point at the Pi's LAN IP in public DNS, so nothing is reachable from the internet.
     command:
       - sh
       - -c
       - |
         cat > /etc/caddy/Caddyfile <<'EOF'
-        *.pi.roots.ee {
+        (dns) {
         	tls {
         		dns digitalocean {env.DO_AUTH_TOKEN}
         	}
+        }
+
+        # The wildcard certificate does not cover the bare name, so it gets its own; Homepage lives here.
+        pi.roots.ee {
+        	import dns
+        	reverse_proxy 127.0.0.1:3000
+        }
+
+        *.pi.roots.ee {
+        	import dns
 
         	@ha host ha.pi.roots.ee
         	handle @ha {

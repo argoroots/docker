@@ -11,6 +11,7 @@ Docker services on a Raspberry Pi. Each `*.yaml` is one Portainer stack, deploye
 | `esphome.yaml` | ESPHome | :6052 | `USERNAME`, `PASSWORD` |
 | `file-browser.yaml` | File Browser over `/mnt` | :8082 | `USERNAME`, `PASSWORD`, optional `UID`, `GID` |
 | `home-assistant.yaml` | Home Assistant | :8123 | – |
+| `homepage.yaml` | Homepage start page: a tile per service with up/down status, plus CPU, memory, temperature and disk use. Its config is written in this file. | via `https://pi.roots.ee` | – |
 | `music-assistant.yaml` | Music Assistant | :8095 | – |
 | `openthread.yaml` | OpenThread border router, Matter server, Thread credentials watcher, host sysctls | – | `THREAD_TONGLE_ID` |
 | `plex.yaml` | Plex | :32400 | – |
@@ -27,10 +28,11 @@ Use the file name only, without the path, e.g. `usb-Nabu_Casa_SkyConnect_v1.0_<s
 
 ## HTTPS
 
-Caddy serves the web UIs on subdomains of `pi.roots.ee`, using one Let's Encrypt wildcard certificate:
+Caddy serves the web UIs on subdomains of `pi.roots.ee`, using a Let's Encrypt wildcard certificate, plus a second certificate for the bare name:
 
 | URL | Service |
 | --- | --- |
+| `https://pi.roots.ee` | Homepage, links to everything below |
 | `https://ha.pi.roots.ee` | Home Assistant |
 | `https://z2m.pi.roots.ee` | Zigbee2MQTT |
 | `https://esphome.pi.roots.ee` | ESPHome |
@@ -47,7 +49,7 @@ The official Caddy image has no DNS plugins, so `caddy.yaml` builds its own imag
 One-time setup:
 
 1. In the UniFi console, give the Pi a fixed IP (DHCP reservation).
-2. In DigitalOcean, under Networking → Domains → `roots.ee`, add an `A` record: hostname `*.pi`, value the Pi's LAN IP.
+2. In DigitalOcean, under Networking → Domains → `roots.ee`, add two `A` records with the Pi's LAN IP as the value: hostname `pi` and hostname `*.pi`.
 3. In DigitalOcean, under API, create a token with custom scopes `domain: create, read, update, delete`. Caddy uses it only to add and remove the challenge's TXT records.
 4. Tell Home Assistant to trust the proxy. Add this to its `configuration.yaml`, then restart HA:
 
