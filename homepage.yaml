@@ -18,7 +18,7 @@ services:
     command:
       - |
         cat > /app/config/settings.yaml <<'EOF'
-        title: Pi
+        title: Docker.local
         headerStyle: boxedWidgets
         cardStyle: hairline
         # Groups and services are kept in alphabetical order; Homepage shows them in the order listed.
@@ -29,6 +29,8 @@ services:
           Home:
             style: column
           Media:
+            style: column
+          Tesla:
             style: column
         EOF
 
@@ -68,6 +70,15 @@ services:
                 icon: plex.png
                 href: https://app.plex.tv/desktop
                 siteMonitor: http://127.0.0.1:32400/identity
+        - Tesla:
+            - Grafana:
+                icon: grafana.png
+                href: https://grafana.tesla.roots.ee
+                siteMonitor: https://grafana.tesla.roots.ee
+            - TeslaMate:
+                icon: teslamate.png
+                href: https://tesla.roots.ee
+                siteMonitor: https://tesla.roots.ee
         EOF
 
         cat > /app/config/widgets.yaml <<'EOF'
