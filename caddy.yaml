@@ -9,6 +9,8 @@ services:
         FROM caddy:latest
         COPY --from=builder /usr/bin/caddy /usr/bin/caddy
     image: caddy-digitalocean:local
+    # Built here, never pushed: skips Portainer's re-pull (which would fail) and rebuilds on every deploy instead.
+    pull_policy: build
     container_name: caddy
     restart: unless-stopped
     # Host networking so every service is reachable at 127.0.0.1, whether it runs on the host network or publishes to localhost.
