@@ -51,17 +51,7 @@ One-time setup:
 1. In the UniFi console, give the Pi a fixed IP (DHCP reservation).
 2. In DigitalOcean, under Networking → Domains → `roots.ee`, add two `A` records with the Pi's LAN IP as the value: hostname `pi` and hostname `*.pi`.
 3. In DigitalOcean, under API, create a token with custom scopes `domain: create, read, update, delete`. Caddy uses it only to add and remove the challenge's TXT records.
-4. Tell Home Assistant to trust the proxy. Add this to its `configuration.yaml`, then restart HA:
-
-   ```yaml
-   http:
-     use_x_forwarded_for: true
-     trusted_proxies:
-       - 127.0.0.1
-       - ::1
-   ```
-
-   Without it, HA answers every proxied request with `400 Bad Request`.
+4. Tell Home Assistant to trust the proxy. In HA, under Settings → System → Network, turn on **Trust X-Forwarded-For** and add `127.0.0.1/32` and `::1/128` to **Trusted proxies**. Saving restarts HA, and you must confirm the new settings within 5 minutes, so do this at `http://<pi-ip>:8123`, not through the proxy. Without it, HA answers every proxied request with `400 Bad Request`. Since HA 2026.8 these are UI settings; an `http:` block in `configuration.yaml` is ignored.
 5. Create the `caddy` stack in Portainer from `caddy.yaml` with `DO_AUTH_TOKEN` set. The first start takes a minute or two while the certificate is issued; follow it with `docker logs -f caddy`.
 6. Open `https://ha.pi.roots.ee`. Then update the URLs the apps hand out:
    - HA → Settings → System → Network: set the local network URL to `https://ha.pi.roots.ee`.

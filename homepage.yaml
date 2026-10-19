@@ -9,8 +9,8 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
-      # Homepage refuses requests for any other Host header.
-      HOMEPAGE_ALLOWED_HOSTS: pi.roots.ee
+      # Homepage refuses requests for any other Host header; the IP is the fallback when DNS or Caddy is down.
+      HOMEPAGE_ALLOWED_HOSTS: pi.roots.ee,192.168.1.2:3000
     # Homepage has no env-var configuration for services, so the config is written at start into a tmpfs; this file is the only place it lives.
     entrypoint: ["sh", "-c"]
     command:
@@ -90,9 +90,9 @@ services:
         echo '[]' > /app/config/bookmarks.yaml
 
         exec docker-entrypoint.sh node server.js
-    # Published to localhost only; Caddy serves it as https://pi.roots.ee.
+    # Caddy serves it as https://pi.roots.ee; also published on the LAN as http://192.168.1.2:3000.
     ports:
-      - 127.0.0.1:3000:3000
+      - 3000:3000
     # Lets the Plex status check reach Plex, which runs on the host network.
     extra_hosts:
       - host.docker.internal:host-gateway
