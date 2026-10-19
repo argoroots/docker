@@ -73,8 +73,8 @@ services:
         - Tesla:
             - Grafana:
                 icon: grafana.png
-                href: https://grafana.tesla.roots.ee
-                siteMonitor: https://grafana.tesla.roots.ee
+                href: https://tesla.roots.ee/grafana
+                siteMonitor: https://tesla.roots.ee/grafana
             - TeslaMate:
                 icon: teslamate.png
                 href: https://tesla.roots.ee
@@ -82,10 +82,6 @@ services:
         EOF
 
         cat > /app/config/widgets.yaml <<'EOF'
-        # `title` above only names the browser tab; this shows it on the page.
-        - greeting:
-            text_size: xl
-            text: Docker.local
         - resources:
             label: Pi
             cpu: true
@@ -110,6 +106,21 @@ services:
         .service-icon img {
           width: 24px !important;
           height: 24px !important;
+        }
+
+        /* `title` only names the browser tab; this shows it above the stats, styled like the group headings (text-xl, font-medium, theme-800 / dark theme-300). Keep the text in sync with `title`. */
+        #information-widgets::before {
+          content: "Docker.local";
+          flex-basis: 100%;
+          padding: 0 0.25rem;
+          margin-bottom: 0.5rem;
+          font-size: 1.25rem;
+          line-height: 1.75rem;
+          font-weight: 500;
+          color: rgb(var(--color-800));
+        }
+        .dark #information-widgets::before {
+          color: rgb(var(--color-300));
         }
         EOF
 
