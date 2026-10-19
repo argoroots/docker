@@ -65,10 +65,11 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
-    # The frontend listens on 9123, set in configuration.yaml.
+    # The frontend listens on 9123, set in configuration.yaml; nothing else in Zigbee2MQTT serves HTTP.
     ports:
-      - 8084:8080
       - 9123:9123
+      # Onboarding wizard: only runs on 8080 on a fresh install (no configuration.yaml). Uncomment for first setup; host 8084 because OTBR's web UI uses host 8080.
+      # - 8084:8080
     volumes:
       - zigbee2mqtt:/app/data
       - /run/udev:/run/udev:ro
