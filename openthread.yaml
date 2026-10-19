@@ -63,7 +63,6 @@ services:
       - 20
     environment:
       TZ: Europe/Tallinn
-      OT_FORM_NETWORK: "1"
       OT_INFRA_IF: wlan0
       OT_LOG_LEVEL: 3
       OT_RCP_DEVICE: "spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=460800"
@@ -71,7 +70,6 @@ services:
       OT_REST_LISTEN_ADDR: 127.0.0.1
       OT_WEB_LISTEN_ADDR: 127.0.0.1
       OT_THREAD_IF: wpan0
-      OTBR_ENABLE_TD_SERVER: "1"
     volumes:
       - openthread:/data
     devices:

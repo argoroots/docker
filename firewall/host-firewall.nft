@@ -6,10 +6,10 @@ table inet host_firewall
 delete table inet host_firewall
 
 table inet host_firewall {
-    # 22 SSH, 6052 ESPHome, 8095 Music Assistant UI, 8097 Music Assistant audio stream (fetched by players), 8123 Home Assistant, 32400 Plex, 45876 Beszel agent.
+    # 22 SSH, 6052 ESPHome, 8095 Music Assistant UI, 8097 Music Assistant audio stream (fetched by players), 8123 Home Assistant, 32400 Plex. The Beszel agent needs no port: it connects out to the hub over WebSocket.
     set lan_tcp {
         type inet_service
-        elements = { 22, 6052, 8095, 8097, 8123, 32400, 45876 }
+        elements = { 22, 6052, 8095, 8097, 8123, 32400 }
     }
 
     # 68 DHCPv4 client, 546 DHCPv6 client, 5353 unicast mDNS replies, 5540 Matter.

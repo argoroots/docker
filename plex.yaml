@@ -14,7 +14,7 @@ services:
       # Read-only: Plex never needs to write media, and ssd1 also holds the restic repo.
       - /mnt/ssd1:/data/ssd1:ro
       - /mnt/ssd2:/data/ssd2:ro
-    # Transcoding scratch in RAM: several GB written and deleted per session, so keeping it off the NVMe saves write cycles and is faster.
+    # Plex is set never to transcode; the image declares /transcode as a volume and the tmpfs (empty, so no RAM used) only stops Docker creating a new anonymous volume on every recreate.
     tmpfs:
       - /transcode:size=2g
     logging:
