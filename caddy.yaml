@@ -33,6 +33,8 @@ services:
         (dns) {
         	tls {
         		dns digitalocean {env.DO_AUTH_TOKEN}
+        		# Check the challenge record via public DNS; the router's cache served a stale CNAME for hours.
+        		resolvers 1.1.1.1 8.8.8.8
         	}
         }
 
