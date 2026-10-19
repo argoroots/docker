@@ -3,6 +3,8 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: unless-stopped
+    # Host networking: the Caddy widget needs Caddy's admin API, which only answers on 127.0.0.1:2019, and network usage must see the Pi's real interfaces. Listens on :3000 (allowed in the host firewall); Caddy serves it as https://pi.roots.ee.
+    network_mode: host
     cap_drop:
       - all
     security_opt:
@@ -11,6 +13,15 @@ services:
       TZ: Europe/Tallinn
       # Homepage refuses requests for any other Host header; the IP is the fallback when DNS or Caddy is down.
       HOMEPAGE_ALLOWED_HOSTS: pi.roots.ee,192.168.1.2:3000
+      # Widget credentials, set as Portainer stack env; Homepage substitutes {{HOMEPAGE_VAR_*}} in the config below. A widget whose credentials are empty just shows an error.
+      HOMEPAGE_VAR_HA_TOKEN: ${HA_TOKEN}
+      HOMEPAGE_VAR_PLEX_TOKEN: ${PLEX_TOKEN}
+      HOMEPAGE_VAR_PORTAINER_KEY: ${PORTAINER_KEY}
+      HOMEPAGE_VAR_PORTAINER_ENV: ${PORTAINER_ENV:-1}
+      HOMEPAGE_VAR_ESPHOME_USERNAME: ${ESPHOME_USERNAME}
+      HOMEPAGE_VAR_ESPHOME_PASSWORD: ${ESPHOME_PASSWORD}
+      HOMEPAGE_VAR_BESZEL_USERNAME: ${BESZEL_USERNAME}
+      HOMEPAGE_VAR_BESZEL_PASSWORD: ${BESZEL_PASSWORD}
     # Homepage has no env-var configuration for services, so the config is written at start into a tmpfs; this file is the only place it lives.
     entrypoint: ["sh", "-c"]
     command:
@@ -18,6 +29,7 @@ services:
         cat > /app/config/settings.yaml <<'EOF'
         title: Pi
         headerStyle: clean
+        statusStyle: dot
         layout:
           Home:
             style: row
@@ -36,6 +48,11 @@ services:
                 icon: home-assistant.png
                 href: https://ha.pi.roots.ee
                 siteMonitor: https://ha.pi.roots.ee
+                widget:
+                  type: homeassistant
+                  url: http://127.0.0.1:8123
+                  key: "{{HOMEPAGE_VAR_HA_TOKEN}}"
+                  fields: ["people_home", "lights_on", "switches_on"]
             - Zigbee2MQTT:
                 icon: zigbee2mqtt.png
                 href: https://z2m.pi.roots.ee
@@ -44,11 +61,21 @@ services:
                 icon: esphome.png
                 href: https://esphome.pi.roots.ee
                 siteMonitor: https://esphome.pi.roots.ee
+                widget:
+                  type: esphome
+                  url: http://127.0.0.1:6052
+                  username: "{{HOMEPAGE_VAR_ESPHOME_USERNAME}}"
+                  password: "{{HOMEPAGE_VAR_ESPHOME_PASSWORD}}"
+                  fields: ["total", "online", "offline"]
         - Media:
             - Plex:
                 icon: plex.png
                 href: https://app.plex.tv/desktop
-                siteMonitor: http://host.docker.internal:32400/identity
+                siteMonitor: http://127.0.0.1:32400/identity
+                widget:
+                  type: plex
+                  url: http://127.0.0.1:32400
+                  key: "{{HOMEPAGE_VAR_PLEX_TOKEN}}"
             - Music Assistant:
                 icon: music-assistant.png
                 href: https://music.pi.roots.ee
@@ -58,6 +85,18 @@ services:
                 icon: portainer.png
                 href: https://portainer.pi.roots.ee
                 siteMonitor: https://portainer.pi.roots.ee
+                widget:
+                  type: portainer
+                  # Through Caddy for a valid certificate; Portainer's own 9443 is self-signed.
+                  url: https://portainer.pi.roots.ee
+                  env: "{{HOMEPAGE_VAR_PORTAINER_ENV}}"
+                  key: "{{HOMEPAGE_VAR_PORTAINER_KEY}}"
+            - Caddy:
+                icon: caddy.png
+                description: Reverse proxy
+                widget:
+                  type: caddy
+                  url: http://127.0.0.1:2019
             - File Browser:
                 icon: filebrowser.png
                 href: https://files.pi.roots.ee
@@ -66,19 +105,34 @@ services:
                 icon: beszel.png
                 href: https://d.tesla.roots.ee
                 siteMonitor: https://d.tesla.roots.ee
+                widget:
+                  type: beszel
+                  url: https://d.tesla.roots.ee
+                  username: "{{HOMEPAGE_VAR_BESZEL_USERNAME}}"
+                  password: "{{HOMEPAGE_VAR_BESZEL_PASSWORD}}"
+                  # The system's name in Beszel; omit for an overview of all systems.
+                  systemId: docker.local
+                  version: 2
         EOF
 
         cat > /app/config/widgets.yaml <<'EOF'
         - resources:
+            label: Pi
             cpu: true
             memory: true
             cputemp: true
             uptime: true
             units: metric
-            disk:
-              - /
-              - /mnt/ssd1
-              - /mnt/ssd2
+            network: true
+        - resources:
+            label: NVMe
+            disk: /
+        - resources:
+            label: SSD1
+            disk: /mnt/ssd1
+        - resources:
+            label: SSD2
+            disk: /mnt/ssd2
         - datetime:
             format:
               dateStyle: long
@@ -90,13 +144,7 @@ services:
         echo '[]' > /app/config/bookmarks.yaml
 
         exec docker-entrypoint.sh node server.js
-    # Caddy serves it as https://pi.roots.ee; also published on the LAN as http://192.168.1.2:3000.
-    ports:
-      - 3000:3000
-    # Lets the Plex status check reach Plex, which runs on the host network.
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    # /app/config holds only the generated files and Homepage's logs, so nothing needs to persist. The SSD mounts are read-only and only feed the disk-usage widget.
+    # /app/config holds only the generated files and Homepage's logs, so nothing needs to persist. The SSD mounts are read-only and only feed the disk-usage widgets.
     tmpfs:
       - /app/config
     volumes:

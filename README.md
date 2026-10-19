@@ -11,7 +11,7 @@ Docker services on a Raspberry Pi. Each `*.yaml` is one Portainer stack, deploye
 | `esphome.yaml` | ESPHome | :6052 | `USERNAME`, `PASSWORD` |
 | `file-browser.yaml` | File Browser over `/mnt` | :8082 | `USERNAME`, `PASSWORD`, optional `UID`, `GID` |
 | `home-assistant.yaml` | Home Assistant | :8123 | – |
-| `homepage.yaml` | Homepage start page: a tile per service with up/down status, plus CPU, memory, temperature and disk use. Its config is written in this file. | via `https://pi.roots.ee` | – |
+| `homepage.yaml` | Homepage start page: a tile per service with up/down status and live widgets, plus CPU, memory, temperature, network and disk use. Its config is written in this file. | `https://pi.roots.ee`, :3000 | Widget credentials, see [Homepage widgets](#homepage-widgets) |
 | `music-assistant.yaml` | Music Assistant | :8095 | – |
 | `openthread.yaml` | OpenThread border router, Matter server, Thread credentials watcher, host sysctls | – | `THREAD_TONGLE_ID` |
 | `plex.yaml` | Plex | :32400 | – |
@@ -56,6 +56,21 @@ One-time setup:
 6. Open `https://ha.pi.roots.ee`. Then update the URLs the apps hand out:
    - HA → Settings → System → Network: set the local network URL to `https://ha.pi.roots.ee`.
    - Zigbee2MQTT `configuration.yaml`: set `frontend.url` to `https://z2m.pi.roots.ee`.
+
+## Homepage widgets
+
+The live widgets on `https://pi.roots.ee` need these environment variables on the `homepage` stack in Portainer. A widget whose variables are missing just shows an error; the rest of the page still works.
+
+| Variable | Widget | Where to get it |
+| --- | --- | --- |
+| `HA_TOKEN` | Home Assistant: people home, lights on, switches on | HA → your profile → Security → Long-lived access tokens → Create token |
+| `PLEX_TOKEN` | Plex: streams and library counts | Plex Web → any item → ⋯ → Get Info → View XML; the token is the `X-Plex-Token` value in the URL |
+| `PORTAINER_KEY` | Portainer: running, stopped and total containers | Portainer → your user (top right) → My account → Access tokens → Add access token |
+| `PORTAINER_ENV` | Portainer environment ID; defaults to `1` | The number at the end of the URL when you open the environment, e.g. `#!/3/docker/dashboard` → `3` |
+| `ESPHOME_USERNAME`, `ESPHOME_PASSWORD` | ESPHome: devices online and offline | The same values as `USERNAME` and `PASSWORD` on the `esphome` stack |
+| `BESZEL_USERNAME`, `BESZEL_PASSWORD` | Beszel: this Pi's CPU, memory, disk and network | Beszel requires a **superuser** for this. Create a separate one just for Homepage in the hub's PocketBase admin (`https://d.tesla.roots.ee/_/`), so it can be revoked on its own. |
+
+The Caddy widget needs nothing: it reads Caddy's admin API on `127.0.0.1:2019`.
 
 ## Host scripts
 
