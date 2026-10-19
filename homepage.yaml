@@ -18,7 +18,7 @@ services:
     command:
       - |
         cat > /app/config/settings.yaml <<'EOF'
-        title: Raspberry PI
+        title: Raspberry Pi
         headerStyle: boxedWidgets
         cardStyle: hairline
         # Groups and services are kept in alphabetical order; Homepage shows them in the order listed.
@@ -83,7 +83,7 @@ services:
 
         cat > /app/config/widgets.yaml <<'EOF'
         - resources:
-            label: Pi
+            label: System
             cpu: true
             memory: true
             cputemp: true
@@ -110,7 +110,7 @@ services:
 
         /* `title` only names the browser tab; this shows it above the stats, styled like the group headings (text-xl, font-medium, theme-800 / dark theme-300). Keep the text in sync with `title`. */
         #information-widgets::before {
-          content: "Raspberry PI";
+          content: "Raspberry Pi";
           flex-basis: 100%;
           padding: 0 0.25rem;
           margin-top: 4.5rem;
@@ -122,6 +122,14 @@ services:
         }
         .dark #information-widgets::before {
           color: rgb(var(--color-300));
+        }
+
+        /* Stretch the stat boxes so the row spans the same width as the service columns below; the empty right-hand widget area would otherwise take a slot. */
+        #widgets-wrap > :not(#information-widgets-right) {
+          flex: 1 1 auto !important;
+        }
+        #information-widgets-right:empty {
+          display: none;
         }
         EOF
 
