@@ -10,8 +10,16 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
+    # --storage-path / --paa-root-cert-dir are the image's own defaults and must be repeated: setting `command` replaces them wholesale, and without the storage path the fabric and every commissioned node are lost on restart.
+    # --listen-address keeps the unauthenticated websocket API off the LAN; HA connects via localhost.
+    command: >-
+      --storage-path /data
+      --paa-root-cert-dir /data/credentials
+      --listen-address 127.0.0.1
     volumes:
       - /docker/matter-server/data:/data
+    labels:
+      autoheal: "true"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('127.0.0.1', 5580), 5)\""]
       interval: 60s
