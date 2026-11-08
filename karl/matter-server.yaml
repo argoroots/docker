@@ -6,20 +6,25 @@ services:
     network_mode: host
     cap_drop:
       - all
+    # apparmor=unconfined: Docker's default profile blocks the D-Bus calls to BlueZ that Bluetooth commissioning needs.
     security_opt:
+      - apparmor=unconfined
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
     # --storage-path / --paa-root-cert-dir are the image's own defaults and must be repeated: setting `command` replaces them wholesale, and without the storage path the fabric and every commissioned node are lost on restart.
     # --primary-interface stops the controller advertising itself on every docker bridge and veth, where no device can reach it. wlan0: eth0 is unplugged on Karl's Pi.
-    # --listen-address keeps the unauthenticated websocket API off the LAN; HA connects via localhost.
+    # --bluetooth-adapter commissions over BLE from the Pi, so no phone is involved and no foreign Thread credentials get handed out.
+    # --listen-address keeps the unauthenticated websocket API off the LAN; HA connects via 127.0.0.1.
     command: >-
       --storage-path /data
       --paa-root-cert-dir /data/credentials
       --primary-interface wlan0
+      --bluetooth-adapter 0
       --listen-address 127.0.0.1
     volumes:
       - /docker/matter-server/data:/data
+      - /run/dbus:/run/dbus:ro
     labels:
       autoheal: "true"
     healthcheck:
@@ -38,3 +43,72 @@ services:
         limits:
           memory: 1G
           cpus: 1.0
+
+  # matter-server keeps the Thread dataset in memory only, so every restart loses it and pairing a NEW Thread device fails with "Required network information not provided ... thread (no)"; this checks every minute and re-sets it when missing.
+  # Karl's Pi has no border router of its own (the Aqara M100 is one), so the dataset comes from Home Assistant's preferred Thread network instead of a local OTBR. HA has it once the iOS app's "Sync Thread credentials" has run.
+  matter-thread-credentials:
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    container_name: matter-thread-credentials
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - matter-server
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Europe/Tallinn
+    entrypoint: ["python", "-c"]
+    command:
+      - |
+        import asyncio, aiohttp, json
+        STORE = '/ha-storage/thread.datasets'
+        WS = 'http://127.0.0.1:5580/ws'
+
+        def preferred_tlv():
+            with open(STORE) as f:
+                data = json.load(f)['data']
+            for dataset in data['datasets']:
+                if dataset['id'] == data.get('preferred_dataset'):
+                    return dataset['tlv']
+            raise LookupError('Home Assistant has no preferred Thread network')
+
+        async def ensure_dataset(session):
+            async with session.ws_connect(WS) as ws:
+                info = await ws.receive_json()
+                if info.get('thread_credentials_set'):
+                    return
+                await ws.send_json({
+                    'message_id': 'set',
+                    'command': 'set_thread_dataset',
+                    'args': {'dataset': preferred_tlv()},
+                })
+                print('dataset set:', await ws.receive_json(), flush=True)
+
+        async def main():
+            async with aiohttp.ClientSession() as session:
+                while True:
+                    try:
+                        await ensure_dataset(session)
+                    except Exception as err:
+                        print('waiting for matter-server / HA Thread dataset: %r' % err, flush=True)
+                    await asyncio.sleep(60)
+
+        asyncio.run(main())
+    # The whole directory, not the file: HA replaces thread.datasets on every save, which a single-file bind mount would not follow.
+    volumes:
+      - /home/pi/homeassistant/.storage:/ha-storage:ro
+    # The image declares /data as a volume; tmpfs stops Docker creating an anonymous volume for it. This container stores nothing.
+    tmpfs:
+      - /data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
