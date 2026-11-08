@@ -1,0 +1,40 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:latest
+    container_name: home-assistant
+    restart: unless-stopped
+    network_mode: host
+    # No cap_drop here: the s6 init runs as root and fixes ownership under
+    # /config, which needs CAP_DAC_OVERRIDE/CHOWN. Dropping all capabilities
+    # makes root unable to write there and HA exits on startup.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Europe/Tallinn
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/pi/homeassistant:/config
+      - /run/dbus:/run/dbus:ro
+    # HA can hang with the process still alive. Long start_period: a cold start
+    # takes a couple of minutes and must not be flagged unhealthy meanwhile.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8123/ >/dev/null || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    # A quarter core made startup and every restart crawl; HA needs real CPU
+    # while it loads integrations.
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: 2.0

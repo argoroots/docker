@@ -1,0 +1,30 @@
+services:
+  matter-server:
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    container_name: matter-server
+    restart: unless-stopped
+    network_mode: host
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Europe/Tallinn
+    volumes:
+      - /docker/matter-server/data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('127.0.0.1', 5580), 5)\""]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1.0
