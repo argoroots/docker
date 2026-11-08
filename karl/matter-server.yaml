@@ -11,10 +11,12 @@ services:
     environment:
       TZ: Europe/Tallinn
     # --storage-path / --paa-root-cert-dir are the image's own defaults and must be repeated: setting `command` replaces them wholesale, and without the storage path the fabric and every commissioned node are lost on restart.
+    # --primary-interface stops the controller advertising itself on every docker bridge and veth, where no device can reach it. wlan0: eth0 is unplugged on Karl's Pi.
     # --listen-address keeps the unauthenticated websocket API off the LAN; HA connects via localhost.
     command: >-
       --storage-path /data
       --paa-root-cert-dir /data/credentials
+      --primary-interface wlan0
       --listen-address 127.0.0.1
     volumes:
       - /docker/matter-server/data:/data
