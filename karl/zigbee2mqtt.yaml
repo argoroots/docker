@@ -61,7 +61,8 @@ services:
       - /home/pi/zigbee2mqtt/data:/app/data
       - /run/udev:/run/udev:ro
     devices:
-      - /dev/serial/by-id/${ZIGBEE_TONGLE_ID}:/dev/ttyUSB0
+      # Fails with this message instead of Docker's "not a device node" when the stack env var is missing.
+      - /dev/serial/by-id/${ZIGBEE_TONGLE_ID:?set ZIGBEE_TONGLE_ID in the stack env to the dongle name from ls /dev/serial/by-id/}:/dev/ttyUSB0
     # The container stays "Up" when the process hangs; this catches that. Tries both published ports, since the frontend port is set in Karl's configuration.yaml.
     labels:
       autoheal: "true"
