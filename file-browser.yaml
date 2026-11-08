@@ -3,7 +3,6 @@ services:
     image: filebrowser/filebrowser:latest
     container_name: file-browser
     restart: unless-stopped
-    network_mode: bridge
     cap_drop:
       - all
     security_opt:

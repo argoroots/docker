@@ -1,0 +1,158 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    # Host networking so network usage sees the Pi's real interfaces. Listens on :3000.
+    network_mode: host
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Europe/Tallinn
+      # Homepage refuses requests for any other Host header; the IP is for when the firewall is stopped.
+      HOMEPAGE_ALLOWED_HOSTS: pi.roots.ee,192.168.1.2:3000
+    # Homepage has no env-var configuration for services, so the config is written at start into a tmpfs; this file is the only place it lives.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        cat > /app/config/settings.yaml <<'EOF'
+        title: Raspberry Pi
+        headerStyle: boxedWidgets
+        cardStyle: hairline
+        # Groups and services are kept in alphabetical order; Homepage shows them in the order listed.
+        # style: column puts the groups side by side, each one's services stacked.
+        layout:
+          Admin:
+            style: column
+          Home:
+            style: column
+          Media:
+            style: column
+          Tesla:
+            style: column
+        EOF
+
+        cat > /app/config/services.yaml <<'EOF'
+        - Admin:
+            - Beszel:
+                icon: beszel.png
+                href: https://d.tesla.roots.ee
+                siteMonitor: https://d.tesla.roots.ee
+            - File Browser:
+                icon: filebrowser.png
+                href: https://files.pi.roots.ee
+                siteMonitor: https://files.pi.roots.ee
+            - Portainer:
+                icon: portainer.png
+                href: https://portainer.pi.roots.ee
+                siteMonitor: https://portainer.pi.roots.ee
+        - Home:
+            - ESPHome:
+                icon: esphome.png
+                href: https://esphome.pi.roots.ee
+                siteMonitor: https://esphome.pi.roots.ee
+            - Home Assistant:
+                icon: home-assistant.png
+                href: https://ha.pi.roots.ee
+                siteMonitor: https://ha.pi.roots.ee
+            - Zigbee2MQTT:
+                icon: zigbee2mqtt.png
+                href: https://z2m.pi.roots.ee
+                siteMonitor: https://z2m.pi.roots.ee
+        - Media:
+            - Music Assistant:
+                icon: music-assistant.png
+                href: https://music.pi.roots.ee
+                siteMonitor: https://music.pi.roots.ee
+            - Plex:
+                icon: plex.png
+                href: https://plex.pi.roots.ee
+                siteMonitor: http://127.0.0.1:32400/identity
+        - Tesla:
+            - Grafana:
+                icon: grafana.png
+                href: https://tesla.roots.ee/grafana
+                siteMonitor: https://tesla.roots.ee/grafana
+            - TeslaMate:
+                icon: teslamate.png
+                href: https://tesla.roots.ee
+                siteMonitor: https://tesla.roots.ee
+        EOF
+
+        cat > /app/config/widgets.yaml <<'EOF'
+        - resources:
+            label: System
+            cpu: true
+            memory: true
+            cputemp: true
+            uptime: true
+            units: metric
+            network: true
+        - resources:
+            label: NVMe
+            disk: /
+        - resources:
+            label: SSD1
+            disk: /mnt/ssd1
+        - resources:
+            label: SSD2
+            disk: /mnt/ssd2
+        EOF
+
+        # Service icons are 32 px by default, set inline, hence !important; 24 px leaves more room in the 48 px icon slot.
+        cat > /app/config/custom.css <<'EOF'
+        .service-icon img {
+          width: 24px !important;
+          height: 24px !important;
+        }
+
+        /* `title` only names the browser tab; this shows it above the stats, styled like the group headings (text-xl, font-medium, theme-800 / dark theme-300). Keep the text in sync with `title`. */
+        #information-widgets::before {
+          content: "Raspberry Pi";
+          flex-basis: 100%;
+          padding: 0 0.25rem;
+          margin-top: 4.5rem;
+          margin-bottom: 0.5rem;
+          font-size: 1.25rem;
+          line-height: 1.75rem;
+          font-weight: 500;
+          color: rgb(var(--color-800));
+        }
+        .dark #information-widgets::before {
+          color: rgb(var(--color-300));
+        }
+
+        /* Stretch the stat boxes so the row spans the same width as the service columns below; the empty right-hand widget area would otherwise take a slot. */
+        #widgets-wrap > :not(#information-widgets-right) {
+          flex: 1 1 auto !important;
+        }
+        #information-widgets-right:empty {
+          display: none;
+        }
+        EOF
+
+        # Empty, or Homepage fills it with its example bookmarks.
+        echo '[]' > /app/config/bookmarks.yaml
+
+        exec docker-entrypoint.sh node server.js
+    # /app/config holds only the generated files and Homepage's logs, so nothing needs to persist. The SSD mounts are read-only and only feed the disk-usage widgets.
+    tmpfs:
+      - /app/config
+    volumes:
+      - /mnt/ssd1:/mnt/ssd1:ro
+      - /mnt/ssd2:/mnt/ssd2:ro
+    # The image has its own healthcheck; the label lets autoheal act on it.
+    labels:
+      autoheal: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5

@@ -1,0 +1,14 @@
+[Unit]
+Description=Host firewall for host-network services (nftables table inet host_firewall)
+Wants=network-pre.target
+Before=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/host-firewall.nft
+ExecReload=/usr/sbin/nft -f /etc/host-firewall.nft
+ExecStop=/usr/sbin/nft delete table inet host_firewall
+
+[Install]
+WantedBy=multi-user.target
