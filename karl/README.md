@@ -7,6 +7,7 @@ A separate Raspberry Pi 5 (hostname `ha`) on Karl's network, at `192.168.68.61` 
 | `home-assistant.yaml` | 12 | Home Assistant | `http://ha.local:8123` | – |
 | `matter-server.yaml` | 11 | Matter server and the Thread credentials watcher | localhost only | – |
 | `zigbee2mqtt.yaml` | 10 | Zigbee2MQTT and its Mosquitto broker (localhost only) | `http://ha.local:9123` | `ZIGBEE_TONGLE_ID` |
+| `portainer.yaml` | – | Portainer; applied by hand, see the file header | `https://ha.local:9443` | – |
 
 `ZIGBEE_TONGLE_ID` is the dongle's file name in `ls -l /dev/serial/by-id/`, without the path. The coordinator is a TI CC2531 on Z-Stack Home 1.2, which has no coordinator backup: replacing it means re-pairing every device.
 
@@ -16,7 +17,7 @@ Data lives in bind mounts, not Docker volumes: `/home/pi/homeassistant`, `/home/
 
 ## Setup outside this repo
 
-**Portainer** runs from `/home/pi/portainer-compose.yaml`. Port `8000` is only for Edge agents and can be removed from that file; the UI is `https://ha.local:9443`.
+**Memory limits.** Raspberry Pi OS turns off the memory cgroup, and Docker then silently drops every `memory:` limit ("Limitation discarded"). `/boot/firmware/cmdline.txt` ends with `cgroup_enable=memory` (one line, then reboot). Check: `docker info 2>&1 | grep -i warning` prints nothing. Containers created while it was off keep "no limit" until recreated or given one with `docker update --memory`.
 
 **Thread.** Karl's Pi has no border router of its own; the Aqara M100 and an Apple device route to the Thread mesh over Wi-Fi. The Pi must accept their route advertisements, or every Thread Matter device is unreachable. `/etc/sysctl.d/99-matter-thread.conf` must contain:
 

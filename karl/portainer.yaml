@@ -1,0 +1,41 @@
+# Portainer cannot deploy its own stack (redeploying would kill it mid-operation), so this one is applied by hand on Karl's Pi, not from git:
+#   copy this file to /home/pi/portainer-compose.yaml
+#   docker compose -p pi -f /home/pi/portainer-compose.yaml up -d
+# -p pi keeps the existing Compose project name (from the /home/pi folder), so the running container is replaced instead of clashing.
+services:
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    restart: unless-stopped
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Europe/Tallinn
+    # 9443 only: 8000 is the Edge agent tunnel, unused here.
+    ports:
+      - 9443:9443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: 0.5
+
+# External: the volume holds every stack definition and its env vars, so `docker compose down -v` must never be able to delete it.
+volumes:
+  portainer_data:
+    name: portainer_data
+    external: true
+
+networks:
+  default:
+    name: portainer_network
