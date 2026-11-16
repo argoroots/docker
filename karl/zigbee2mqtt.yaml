@@ -11,6 +11,7 @@ services:
       - SETGID
     security_opt:
       - no-new-privileges:true
+    read_only: true
     environment:
       TZ: Europe/Tallinn
     # Published to localhost only: HA reaches it at 127.0.0.1 over host networking, Zigbee2MQTT as mosquitto:1883 on this stack's network. Nothing on the LAN can connect, which is what makes anonymous access acceptable.
@@ -18,6 +19,10 @@ services:
       - 127.0.0.1:1883:1883
     volumes:
       - /home/pi/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    # The image declares these as volumes, so without tmpfs every recreate leaves a new anonymous volume behind. mosquitto.conf has persistence off, so nothing here needs to survive a restart.
+    tmpfs:
+      - /mosquitto/data:uid=1883,gid=1883
+      - /mosquitto/log:uid=1883,gid=1883
     # A publish proves the broker is actually accepting connections, not just that the process is alive.
     labels:
       autoheal: "true"
@@ -44,7 +49,7 @@ services:
     image: ghcr.io/koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
     restart: unless-stopped
-    # Only applies on deploy; after a reboot Docker starts both at once and Zigbee2MQTT may restart until the broker is up.
+    # Only applies on deploy; after a reboot Docker starts both at once and Zigbee2MQTT may restart until the broker is up. It can also exit once at boot with "Not supported, cannot set" while the CC2531 is still enumerating; the restart policy recovers from both.
     depends_on:
       mosquitto:
         condition: service_healthy
@@ -54,8 +59,8 @@ services:
       - no-new-privileges:true
     environment:
       TZ: Europe/Tallinn
+    # The frontend listens on 9123, set in configuration.yaml. It is reachable from the LAN (http://ha.local:9123), so set frontend.auth_token there; without it anyone on the network can control every Zigbee device.
     ports:
-      - 8080:8080
       - 9123:9123
     volumes:
       - /home/pi/zigbee2mqtt/data:/app/data
@@ -63,11 +68,11 @@ services:
     devices:
       # Fails with this message instead of Docker's "not a device node" when the stack env var is missing.
       - /dev/serial/by-id/${ZIGBEE_TONGLE_ID:?set ZIGBEE_TONGLE_ID in the stack env to the dongle name from ls /dev/serial/by-id/}:/dev/ttyUSB0
-    # The container stays "Up" when the process hangs; this catches that. Tries both published ports, since the frontend port is set in Karl's configuration.yaml.
+    # The container stays "Up" when the process hangs; this catches that.
     labels:
       autoheal: "true"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9123/ || wget -q --spider http://127.0.0.1:8080/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9123/ || exit 1"]
       interval: 60s
       timeout: 10s
       retries: 3

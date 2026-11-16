@@ -1,0 +1,10 @@
+[Unit]
+Description=Back up Karl's Home Assistant data to the local restic repository
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/docker-backup.sh
+Nice=10
+IOSchedulingClass=idle

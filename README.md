@@ -20,6 +20,8 @@ Docker services on a Raspberry Pi (`192.168.1.2`). Each `*.yaml` is one Portaine
 
 `*_TONGLE_ID` is the dongle's file name in `ls -l /dev/serial/by-id/`, without the path.
 
+`karl/` is a separate Home Assistant install on Karl's Pi; see [karl/README.md](karl/README.md).
+
 ## Access
 
 Caddy serves every web UI over HTTPS (Let's Encrypt, DNS challenge via DigitalOcean). The names resolve to the Pi's LAN IP, so they work only at home.

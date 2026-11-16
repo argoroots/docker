@@ -13,7 +13,7 @@ services:
     environment:
       TZ: Europe/Tallinn
     # --storage-path / --paa-root-cert-dir are the image's own defaults and must be repeated: setting `command` replaces them wholesale, and without the storage path the fabric and every commissioned node are lost on restart.
-    # --primary-interface stops the controller advertising itself on every docker bridge and veth, where no device can reach it. wlan0: eth0 is unplugged on Karl's Pi.
+    # --primary-interface picks the interface for link-local IPv6 addresses; it does not stop mDNS advertising on the docker bridges, which is harmless. wlan0: eth0 is unplugged on Karl's Pi.
     # --bluetooth-adapter commissions over BLE from the Pi, so no phone is involved and no foreign Thread credentials get handed out.
     # --listen-address keeps the unauthenticated websocket API off the LAN; HA connects via 127.0.0.1.
     command: >-
