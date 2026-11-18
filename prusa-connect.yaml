@@ -1,6 +1,7 @@
 services:
   prusa-connect:
-    image: ghcr.io/prusa3d/prusa-connect:latest
+    # Pinned, unlike the other stacks: only prereleases are published so far, and they get no :latest tag. Switch to :latest once a stable release is out.
+    image: ghcr.io/prusa3d/prusa-connect:0.1.0-beta.1
     container_name: prusa-connect
     restart: unless-stopped
     # Host networking for mDNS: the printers page lists nearby printers and PrusaSlicer finds the server only when the packets reach the LAN, which a bridge network stops. Listens on :8086, set below; OTBR's web UI already holds 8080.
