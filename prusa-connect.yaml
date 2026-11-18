@@ -1,0 +1,82 @@
+services:
+  prusa-connect:
+    image: ghcr.io/prusa3d/prusa-connect:latest
+    container_name: prusa-connect
+    restart: unless-stopped
+    # Host networking for mDNS: the printers page lists nearby printers and PrusaSlicer finds the server only when the packets reach the LAN, which a bridge network stops. Listens on :8086, set below; OTBR's web UI already holds 8080.
+    network_mode: host
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    # The server reads only its config file and flags, no env vars, so the config is written at start, like Mosquitto's. The image's default config/config.yaml is relative to /config, which would put the writable files on a read-only path; every path is therefore absolute here.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        cat > /run/prusa-connect/config.yaml <<'EOF'
+        persistence:
+          type: sqlite
+        core:
+          api:
+            addr: ":8086"
+          discovery:
+            enabled: true
+            # Avahi already answers for the Pi's host name; announcing it twice renames the Pi to raspberrypi-2.local.
+            host_records: system
+          # The resources the web app adds, the installed extensions and the users and permissions. All of it is what has to survive a recreate.
+          overlay: /config/config.d/resources.json
+          modules: /config/config.d/modules
+          authz:
+            database: /config/config.d/authz.db
+          # Caddy, on the same host, so the server logs the browser's address rather than its own.
+          trusted_proxies:
+            - 127.0.0.1/32
+            - ::1/128
+        resources:
+          storage:
+            local:
+              type: filesystem
+              enabled: true
+              required: false
+              config:
+                root: /storage
+        EOF
+        exec /prusa_connect core -config /run/prusa-connect/config.yaml
+    tmpfs:
+      # The generated config; uid 10001 is the image's own user.
+      - /run/prusa-connect:uid=10001,gid=10001
+    volumes:
+      # Named volumes, not bind mounts: Docker seeds them from the image, owned by uid 10001, so no chown is needed.
+      - prusa-connect-config:/config/config.d
+      # Uploaded print files.
+      - prusa-connect-storage:/storage
+      # Uploads over 32 MiB spill to /tmp; up to 4 GiB is allowed, too much for RAM, so this is a volume, not a tmpfs.
+      - prusa-connect-tmp:/tmp
+    labels:
+      autoheal: "true"
+    # The image has no curl or wget; the binary is its own probe and checks readiness, not just that the process runs.
+    healthcheck:
+      test: ["CMD", "/prusa_connect", "core", "-config", "/run/prusa-connect/config.yaml", "healthcheck"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1.0
+
+volumes:
+  prusa-connect-config:
+    name: prusa-connect-config
+  prusa-connect-storage:
+    name: prusa-connect-storage
+  prusa-connect-tmp:
+    name: prusa-connect-tmp

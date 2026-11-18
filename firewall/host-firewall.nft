@@ -6,10 +6,10 @@ table inet host_firewall
 delete table inet host_firewall
 
 table inet host_firewall {
-    # 22 SSH, 80/443 Caddy, 445 Samba, 8097 Music Assistant audio stream (fetched by players), 32400 Plex. The Beszel agent needs no port: it connects out to the hub over WebSocket.
+    # 22 SSH, 80/443 Caddy, 445 Samba, 8086 Prusa Connect (the printers connect to it directly; the browser goes through Caddy), 8097 Music Assistant audio stream (fetched by players), 32400 Plex. The Beszel agent needs no port: it connects out to the hub over WebSocket.
     set lan_tcp {
         type inet_service
-        elements = { 22, 80, 443, 445, 8097, 32400 }
+        elements = { 22, 80, 443, 445, 8086, 8097, 32400 }
     }
 
     # Web UIs served only through Caddy: 3000 Homepage, 6052 ESPHome, 8082 File Browser, 8095 Music Assistant, 8123 Home Assistant, 9123 Zigbee2MQTT, 9443 Portainer. Caddy reaches them from the Pi itself, which neither hook below filters.

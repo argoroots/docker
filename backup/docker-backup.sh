@@ -9,7 +9,7 @@ export RESTIC_PASSWORD_FILE="/root/.restic-password"
 VOLUMES="/var/lib/docker/volumes"
 
 # Containers holding SQLite databases. Copying those live can capture a torn write that only shows up when you try to restore, so they are stopped for the duration -- roughly a minute.
-STOP=(home-assistant plex zigbee2mqtt matter-server music-assistant)
+STOP=(home-assistant plex zigbee2mqtt matter-server music-assistant prusa-connect)
 
 stopped=()
 

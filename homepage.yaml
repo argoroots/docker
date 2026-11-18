@@ -57,6 +57,10 @@ services:
                 icon: home-assistant.png
                 href: https://ha.pi.roots.ee
                 siteMonitor: https://ha.pi.roots.ee
+            - Prusa Connect:
+                icon: prusa-research.png
+                href: https://prusa.pi.roots.ee
+                siteMonitor: https://prusa.pi.roots.ee
             - Zigbee2MQTT:
                 icon: zigbee2mqtt.png
                 href: https://z2m.pi.roots.ee

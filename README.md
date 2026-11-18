@@ -16,6 +16,7 @@ Docker services on a Raspberry Pi (`192.168.1.2`). Each `*.yaml` is one Portaine
 | `openthread.yaml` | Thread border router, Matter server, Thread credentials watcher, host sysctls | – | `THREAD_TONGLE_ID` |
 | `plex.yaml` | Plex; apps connect to 32400 directly | `https://plex.pi.roots.ee` | – |
 | `portainer.yaml` | Portainer; applied by hand, see the file header | `https://portainer.pi.roots.ee` | – |
+| `prusa-connect.yaml` | Self-hosted Prusa Connect; printers connect to `192.168.1.2:8086` directly | `https://prusa.pi.roots.ee` | – |
 | `zigbee2mqtt.yaml` | Zigbee2MQTT and its Mosquitto broker (localhost only, also used by HA) | `https://z2m.pi.roots.ee` | `ZIGBEE_TONGLE_ID` |
 
 `*_TONGLE_ID` is the dongle's file name in `ls -l /dev/serial/by-id/`, without the path.
@@ -46,6 +47,10 @@ The firewall blocks direct access to the proxied UIs; only Plex's 32400 stays op
 
 **Zigbee2MQTT** (Settings → Frontend)
 - **url** `https://z2m.pi.roots.ee`, so links point to the reachable address. Leave **host** empty: Docker's port forwarding needs it listening on all interfaces.
+
+**Prusa Connect**
+- First visit to `https://prusa.pi.roots.ee` runs the setup wizard (sign-in, how printers join). The setup is saved to the `prusa-connect-config` volume, so it survives redeploys.
+- Add a printer in the web app: **Add a printer** generates `prusa_connect.ini`. Check it says `hostname = 192.168.1.2`, `port = 8086`, `tls = false` before copying it to the root of a USB stick. On the printer: Settings → Network → Prusa Connect → load settings, add the printer, then approve the code it shows in the web app.
 
 **Caddy**
 - Built on the Pi to include the DigitalOcean plugin. To update: `docker pull caddy:builder && docker pull caddy:latest`, then redeploy.

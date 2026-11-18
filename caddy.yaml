@@ -68,6 +68,11 @@ services:
         		reverse_proxy 127.0.0.1:8095
         	}
 
+        	@prusa host prusa.pi.roots.ee
+        	handle @prusa {
+        		reverse_proxy 127.0.0.1:8086
+        	}
+
         	@files host files.pi.roots.ee
         	handle @files {
         		reverse_proxy 127.0.0.1:8082
