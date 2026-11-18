@@ -27,6 +27,7 @@ services:
             host_records: system
           # The resources the web app adds, the installed extensions and the users and permissions. All of it is what has to survive a recreate.
           overlay: /config/config.d/resources.json
+          # Extensions that ask for a database get SQLite in module-data/<name> beside this folder, so in the same volume. Postgres would only matter for several servers sharing one database.
           modules: /config/config.d/modules
           authz:
             database: /config/config.d/authz.db
@@ -42,6 +43,14 @@ services:
               required: false
               config:
                 root: /storage
+          # Each printer's charts, events, command log and finished transfers. Declared here so the file is in the volume whatever the wizard would pick; samples and events older than a week are deleted, the command log and transfers are kept.
+          history:
+            past:
+              type: core/sqlite
+              config:
+                path: /config/config.d/history.db
+                retention:
+                  raw: 168h
         EOF
         exec /prusa_connect core -config /run/prusa-connect/config.yaml
     tmpfs:
