@@ -87,3 +87,19 @@ sudo restic init --repo /mnt/ssd1/Backup/docker
 Run now: `sudo systemctl start docker-backup`. Log: `journalctl -u docker-backup`.
 
 **Firewall:** own nftables table, so Docker's and OTBR's rules stay intact. Don't enable `nftables.service`: its default config wipes them. Log-only for now, except the proxied UIs: watch `journalctl -k -g host-firewall` for a week, open what's legitimate, then change the final `accept` to `drop`. After editing: `sudo systemctl reload host-firewall`.
+
+## File sharing (SMB)
+
+Samba on the host shares `/mnt/ssd1` and `/mnt/ssd2` read-write for user `pi`. In Finder: Go → Connect to Server → `smb://pi.roots.ee`, or pick the Pi under Locations.
+
+The SSDs are exFAT, so Finder stores its metadata in `._` files, as on any exFAT drive. From `samba/`:
+
+```sh
+sudo apt install -y samba
+sudo install -m 644 smb.conf /etc/samba/smb.conf
+testparm -s >/dev/null
+sudo smbpasswd -a pi
+sudo systemctl restart smbd && sudo systemctl disable --now nmbd
+```
+
+`smbpasswd` sets the password Finder asks for; it's separate from the login password. `nmbd` is only for old Windows network browsing; Finder finds the Pi through Bonjour.
